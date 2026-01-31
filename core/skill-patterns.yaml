@@ -1,0 +1,1278 @@
+# ============================================================================
+# SKILL PATTERNS LIBRARY
+# ============================================================================
+# Version: 1.0
+# Purpose: Parameterized skill patterns for meta-skill composition
+#
+# This library enables:
+#   1. Instantiate domain-specific skills from reusable patterns
+#   2. Configure patterns via parameters with smart defaults
+#   3. Compose patterns using standardized artifact contracts
+#   4. Generate executable skills or portable prompts
+#
+# Design principles:
+#   - Parameterized: Domain/context configured via parameters
+#   - Composable: Clear input/output contracts for chaining
+#   - Validated: Quality gates at each phase
+#   - Traceable: Technique provenance documented
+# ============================================================================
+
+version: "1.0"
+last_updated: "2026-01-31"
+
+# ============================================================================
+# PATTERN SELECTION GUIDE
+# ============================================================================
+
+selection_guide:
+  description: |
+    Decision tree for selecting the right pattern based on task characteristics.
+    Uses decision tree logic (NOT MoE) to prevent recursion.
+  
+  decision_tree:
+    - question: "What is the primary task?"
+      evaluate_options: "MOE-EVALUATE or TOURNAMENT-RANK"
+      generate_content: "MOE-GENERATE"
+      identify_items: "MOE-IDENTIFY"
+      review_document: "MOE-AUDIT or GAP-AUDIT"
+      validate_decision: "ADVERSARIAL-VALIDATE"
+      consolidate_research: "RESEARCH-SYNTHESIZE"
+      structure_input: "TRANSFORM-STRUCTURE"
+      extract_knowledge: "ELICIT-EXTRACT"
+    
+    - question: "Are multiple expert perspectives valuable?"
+      yes: "Use MOE-* variant"
+      no: "Use non-MoE pattern"
+    
+    - question: "Do you have options to compare?"
+      yes_many: "TOURNAMENT-RANK (>5 options) or MOE-EVALUATE (≤5 options)"
+      yes_few: "MOE-EVALUATE"
+      no: "Not an evaluation task"
+  
+  pattern_comparison:
+    | Pattern | Input | Output | When to Use |
+    |---------|-------|--------|-------------|
+    | MOE-EVALUATE | SOLUTION-CANDIDATES | RANKED-SOLUTION-LIST | Compare options with expert perspectives |
+    | MOE-GENERATE | PROBLEM-STATEMENT | SOLUTION-CANDIDATES | Expert-informed ideation |
+    | MOE-IDENTIFY | Context/domain | PROBLEM-STATEMENT | Discover problems/opportunities |
+    | MOE-AUDIT | Document | GAP-INVENTORY | Expert panel document review |
+    | TOURNAMENT-RANK | SOLUTION-CANDIDATES | RANKED-SOLUTION-LIST | Pure pairwise ranking (no experts) |
+    | ADVERSARIAL-VALIDATE | SOLUTION-CANDIDATE | RISK-ASSESSMENT | Red/blue team stress testing |
+    | RESEARCH-SYNTHESIZE | Multiple sources | Unified findings | Multi-source consolidation |
+    | GAP-AUDIT | Document/artifact | GAP-INVENTORY | Completeness/compliance check |
+    | TRANSFORM-STRUCTURE | Unstructured input | Structured artifact | Format conversion |
+    | ELICIT-EXTRACT | Conversation | Documented knowledge | Knowledge extraction |
+
+# ============================================================================
+# PATTERN 1: MOE-EVALUATE
+# ============================================================================
+
+patterns:
+
+  MOE-EVALUATE:
+    id: PATTERN-01
+    name: "MoE Evaluate"
+    category: evaluation
+    archetype: EVAL
+    
+    description: |
+      Multi-perspective evaluation of options using expert panel deliberation,
+      followed by structured ranking and adversarial validation. The flagship
+      pattern for high-stakes decisions with multiple viable alternatives.
+    
+    when_to_use:
+      ideal:
+        - "Choosing between 2-8 options"
+        - "Multiple stakeholder perspectives matter"
+        - "Decision is high-stakes or difficult to reverse"
+        - "Tradeoffs are non-obvious"
+      avoid:
+        - "Single obvious answer exists"
+        - "Time pressure prevents thorough analysis"
+        - "More than 10 options (use TOURNAMENT-RANK first to filter)"
+        - "Purely objective criteria (use WEIGHTED-SUM directly)"
+    
+    input_contracts:
+      primary: "SOLUTION-CANDIDATES"
+      secondary: ["PROBLEM-STATEMENT"]
+      optional: ["SOLUTION-TAXONOMY"]
+    
+    output_contracts:
+      primary: "RANKED-SOLUTION-LIST"
+      secondary: ["EVALUATION-MATRIX", "EXPERT-OPINION"]
+      optional: ["RISK-ASSESSMENT"]
+    
+    workflow:
+      phases:
+        - phase: 1
+          name: "Expert Panel Assembly"
+          purpose: "Select and instantiate relevant expert personas"
+          techniques:
+            - multi_persona_simulation
+          output_artifact: "EXPERT-OPINION (multiple)"
+          quality_gate: "3-5 experts with orthogonal jurisdictions"
+        
+        - phase: 2
+          name: "Perspective Collection"
+          purpose: "Each expert evaluates all options from their lens"
+          techniques:
+            - multi_lens_analysis
+            - multi_criteria_optimization
+          output_artifact: "EVALUATION-MATRIX"
+          quality_gate: "Every option evaluated by every expert"
+        
+        - phase: 3
+          name: "Tournament Ranking"
+          purpose: "Pairwise comparison to produce robust ranking"
+          techniques:
+            - pairwise_tournament
+            - bradley_terry_aggregation
+          output_artifact: "COMPARISON-PAIR (multiple)"
+          quality_gate: "Position bias checked; 3× pairs minimum"
+        
+        - phase: 4
+          name: "Adversarial Validation"
+          purpose: "Stress-test the top 1-2 options"
+          techniques:
+            - true_steel_manning
+            - disconfirmation_hunt
+          output_artifact: "RISK-ASSESSMENT"
+          quality_gate: "At least 3 substantive challenges addressed"
+          optional: true
+        
+        - phase: 5
+          name: "Synthesis & Recommendation"
+          purpose: "Integrate findings into actionable recommendation"
+          techniques:
+            - confidence_calibration
+            - scqa_communication
+          output_artifact: "RANKED-SOLUTION-LIST"
+          quality_gate: "Confidence tiers assigned; key assumption stated"
+    
+    parameters:
+      # Expert Configuration
+      expert_count:
+        type: integer
+        default: 4
+        min: 3
+        max: 6
+        description: "Number of expert personas to instantiate"
+        guidance: "3-4 for focused decisions; 5-6 for complex multi-stakeholder"
+      
+      expert_panel:
+        type: enum
+        default: "auto_select"
+        options:
+          auto_select: "Select based on domain"
+          product_strategy: "Founder Proxy, User Advocate, Cognitive Load Auditor, Tech Skeptic, Differentiation Challenger"
+          architecture: "Security Architect, Platform Engineer, DevEx, Cost Optimizer, Business Stakeholder"
+          research: "Source Quality Auditor, Recency Validator, Contrarian Hunter, Synthesis Architect, Action Translator"
+          custom: "Specify custom experts"
+        description: "Pre-defined expert panel or custom"
+      
+      # Ranking Configuration
+      ranking_method:
+        type: enum
+        default: "bradley_terry"
+        options: ["bradley_terry", "elo", "weighted_sum"]
+        description: "Algorithm for aggregating comparisons"
+        rubric_reference: "BRADLEY-TERRY or ELO"
+      
+      comparison_depth:
+        type: enum
+        default: "standard"
+        options:
+          minimal: "Single comparison per pair"
+          standard: "3× comparisons with position swapping"
+          comprehensive: "5× comparisons with bias analysis"
+        description: "How thoroughly to compare options"
+      
+      # Validation Configuration
+      include_adversarial:
+        type: boolean
+        default: true
+        description: "Whether to stress-test the winner"
+      
+      adversarial_iterations:
+        type: integer
+        default: 3
+        min: 1
+        max: 5
+        description: "Red/blue cycles for adversarial validation"
+      
+      # Output Configuration
+      output_mode:
+        type: enum
+        default: "artifact"
+        options:
+          artifact: "Produce RANKED-SOLUTION-LIST artifact"
+          prompt: "Generate portable prompt for multi-model use"
+          both: "Produce both artifact and prompt"
+        description: "Output format for downstream consumption"
+    
+    scoring_rubrics:
+      primary: "BRADLEY-TERRY"
+      alternatives: ["ELO", "WEIGHTED-SUM"]
+      selection_logic: |
+        IF comparison_depth = minimal THEN ELO (faster)
+        IF need confidence intervals THEN BRADLEY-TERRY
+        IF criteria-based evaluation THEN WEIGHTED-SUM
+    
+    domain_presets:
+      architecture:
+        expert_panel: "architecture"
+        expert_count: 5
+        ranking_method: "bradley_terry"
+        include_adversarial: true
+        criteria:
+          - { name: "Scalability", weight: 0.20 }
+          - { name: "Maintainability", weight: 0.20 }
+          - { name: "Security", weight: 0.20 }
+          - { name: "Cost", weight: 0.15 }
+          - { name: "Time to Implement", weight: 0.15 }
+          - { name: "Reversibility", weight: 0.10 }
+      
+      product:
+        expert_panel: "product_strategy"
+        expert_count: 4
+        ranking_method: "bradley_terry"
+        include_adversarial: false
+        criteria:
+          - { name: "User Value", weight: 0.25 }
+          - { name: "Business Value", weight: 0.20 }
+          - { name: "Feasibility", weight: 0.20 }
+          - { name: "Speed to Market", weight: 0.15 }
+          - { name: "Strategic Alignment", weight: 0.10 }
+          - { name: "Risk", weight: 0.10 }
+      
+      strategy:
+        expert_panel: "auto_select"
+        expert_count: 5
+        ranking_method: "bradley_terry"
+        include_adversarial: true
+        adversarial_iterations: 4
+    
+    quality_gates:
+      - gate: "expert_orthogonality"
+        condition: "Expert jurisdictions are non-overlapping"
+        severity: error
+        remediation: "Replace overlapping experts"
+      
+      - gate: "all_options_evaluated"
+        condition: "Every option scored by every expert"
+        severity: error
+        remediation: "Complete missing evaluations"
+      
+      - gate: "position_bias_checked"
+        condition: "Close comparisons verified with position swap"
+        severity: warning
+        remediation: "Run swapped comparison"
+      
+      - gate: "confidence_calibrated"
+        condition: "Output includes confidence tiers"
+        severity: error
+        remediation: "Add confidence assessment"
+    
+    anti_patterns:
+      - pattern: "Expert echo chamber"
+        symptom: "All experts agree completely"
+        fix: "Add adversarial expert or check for homogeneity"
+      
+      - pattern: "Scope creep"
+        symptom: "Experts opining outside jurisdiction"
+        fix: "Enforce jurisdiction boundaries"
+      
+      - pattern: "Tournament without calibration"
+        symptom: "Rankings without confidence intervals"
+        fix: "Use Bradley-Terry for statistical grounding"
+    
+    token_budgets:
+      minimal: "3-4K (4 experts, shallow, no adversarial)"
+      standard: "6-8K (5 experts, standard comparison, 3 adversarial)"
+      comprehensive: "10-15K (6 experts, deep analysis, full validation)"
+    
+    composition:
+      chains_well_with:
+        - pattern: "ADVERSARIAL-VALIDATE"
+          purpose: "Extended stress-testing of winner"
+        - pattern: "GAP-AUDIT"
+          purpose: "Verify winner addresses all requirements"
+      
+      can_follow:
+        - pattern: "MOE-GENERATE"
+          purpose: "Generate options, then evaluate"
+        - pattern: "RESEARCH-SYNTHESIZE"
+          purpose: "Synthesize research into options, then evaluate"
+
+  # ============================================================================
+  # PATTERN 2: MOE-GENERATE
+  # ============================================================================
+
+  MOE-GENERATE:
+    id: PATTERN-02
+    name: "MoE Generate"
+    category: generation
+    archetype: GEN
+    
+    description: |
+      Expert-informed ideation and generation. Multiple expert perspectives
+      contribute distinct solution approaches, then diverse outputs are
+      optionally de-duplicated and categorized.
+    
+    when_to_use:
+      ideal:
+        - "Need diverse solution ideas"
+        - "Problem benefits from multiple perspectives"
+        - "Creative exploration phase"
+        - "Want to avoid anchoring on first idea"
+      avoid:
+        - "Solution space is well-defined"
+        - "Need single 'correct' answer"
+        - "Tight time constraints"
+    
+    input_contracts:
+      primary: "PROBLEM-STATEMENT"
+      secondary: []
+      optional: ["SOLUTION-TAXONOMY"]
+    
+    output_contracts:
+      primary: "SOLUTION-CANDIDATES"
+      secondary: ["SOLUTION-TAXONOMY"]
+      optional: []
+    
+    workflow:
+      phases:
+        - phase: 1
+          name: "Problem Framing"
+          purpose: "Ensure problem is well-understood from multiple angles"
+          techniques:
+            - multi_lens_analysis
+          output_artifact: "Problem frame analysis"
+          quality_gate: "Problem understood from 3+ lenses"
+        
+        - phase: 2
+          name: "Expert Ideation"
+          purpose: "Each expert generates solutions from their perspective"
+          techniques:
+            - multi_persona_simulation
+            - divergent_thinking
+          output_artifact: "Raw solution ideas (per expert)"
+          quality_gate: "Each expert contributes 2-5 distinct ideas"
+        
+        - phase: 3
+          name: "Synthesis & Deduplication"
+          purpose: "Combine, categorize, and remove duplicates"
+          techniques:
+            - category_mapping
+            - similarity_detection
+          output_artifact: "SOLUTION-CANDIDATES"
+          quality_gate: "No duplicate solutions; categories assigned"
+        
+        - phase: 4
+          name: "Coverage Assessment"
+          purpose: "Verify solution space is adequately explored"
+          techniques:
+            - mece_gap_detection
+          output_artifact: "SOLUTION-TAXONOMY"
+          quality_gate: "No obvious gaps in solution coverage"
+          optional: true
+    
+    parameters:
+      expert_count:
+        type: integer
+        default: 4
+        min: 3
+        max: 6
+      
+      ideas_per_expert:
+        type: integer
+        default: 3
+        min: 1
+        max: 5
+        description: "Target ideas from each expert"
+      
+      diversity_strategy:
+        type: enum
+        default: "lens_diversity"
+        options:
+          lens_diversity: "Different analytical lenses"
+          stakeholder_diversity: "Different stakeholder perspectives"
+          temporal_diversity: "Short-term vs long-term focus"
+          risk_diversity: "Conservative vs aggressive approaches"
+      
+      include_taxonomy:
+        type: boolean
+        default: true
+        description: "Whether to categorize solutions"
+      
+      output_mode:
+        type: enum
+        default: "artifact"
+        options: ["artifact", "prompt", "both"]
+    
+    scoring_rubrics:
+      primary: null
+      notes: "Generation patterns don't score; downstream EVAL patterns do"
+    
+    domain_presets:
+      product:
+        expert_panel: "product_strategy"
+        ideas_per_expert: 3
+        diversity_strategy: "stakeholder_diversity"
+      
+      architecture:
+        expert_panel: "architecture"
+        ideas_per_expert: 2
+        diversity_strategy: "lens_diversity"
+    
+    quality_gates:
+      - gate: "minimum_ideas"
+        condition: "candidates.length >= expert_count × 2"
+        severity: warning
+        remediation: "Push for more ideas or add experts"
+      
+      - gate: "no_duplicates"
+        condition: "All solutions meaningfully distinct"
+        severity: error
+        remediation: "Merge or differentiate similar ideas"
+    
+    composition:
+      chains_well_with:
+        - pattern: "MOE-EVALUATE"
+          purpose: "Evaluate generated options"
+        - pattern: "TOURNAMENT-RANK"
+          purpose: "Quick ranking of many ideas"
+
+  # ============================================================================
+  # PATTERN 3: MOE-IDENTIFY
+  # ============================================================================
+
+  MOE-IDENTIFY:
+    id: PATTERN-03
+    name: "MoE Identify"
+    category: discovery
+    archetype: ELICIT
+    
+    description: |
+      Multi-perspective problem or opportunity identification. Expert panel
+      surfaces issues, gaps, or opportunities that might be missed by a
+      single perspective.
+    
+    when_to_use:
+      ideal:
+        - "Discovery phase - don't know what problems exist"
+        - "New domain or unfamiliar territory"
+        - "Want to surface hidden issues"
+        - "Opportunity scanning"
+      avoid:
+        - "Problems are already well-defined"
+        - "Need to solve, not identify"
+    
+    input_contracts:
+      primary: null
+      secondary: []
+      notes: "Takes context/domain description, not structured artifact"
+    
+    output_contracts:
+      primary: "PROBLEM-STATEMENT"
+      secondary: []
+      notes: "May output multiple PROBLEM-STATEMENT artifacts"
+    
+    workflow:
+      phases:
+        - phase: 1
+          name: "Context Absorption"
+          purpose: "Understand the domain/situation"
+          techniques:
+            - context_mapping
+          output_artifact: "Context summary"
+          quality_gate: "Key actors, constraints, and goals identified"
+        
+        - phase: 2
+          name: "Expert Scanning"
+          purpose: "Each expert identifies issues from their lens"
+          techniques:
+            - multi_persona_simulation
+            - blind_spot_detection
+          output_artifact: "Issue list (per expert)"
+          quality_gate: "Each expert identifies 2+ issues"
+        
+        - phase: 3
+          name: "Consolidation & Prioritization"
+          purpose: "Merge, dedupe, and rank identified issues"
+          techniques:
+            - similarity_clustering
+            - severity_scoring
+          output_artifact: "PROBLEM-STATEMENT (prioritized list)"
+          quality_gate: "Top 3-5 problems clearly articulated"
+    
+    parameters:
+      expert_count:
+        type: integer
+        default: 4
+        min: 3
+        max: 6
+      
+      identification_focus:
+        type: enum
+        default: "problems"
+        options:
+          problems: "Surface issues and pain points"
+          opportunities: "Surface opportunities and improvements"
+          both: "Surface both problems and opportunities"
+      
+      prioritization_method:
+        type: enum
+        default: "severity"
+        options: ["severity", "frequency", "impact", "urgency"]
+    
+    scoring_rubrics:
+      primary: "SEVERITY-SCORING"
+    
+    composition:
+      chains_well_with:
+        - pattern: "MOE-GENERATE"
+          purpose: "Generate solutions for identified problems"
+        - pattern: "RESEARCH-SYNTHESIZE"
+          purpose: "Research identified problems further"
+
+  # ============================================================================
+  # PATTERN 4: MOE-AUDIT
+  # ============================================================================
+
+  MOE-AUDIT:
+    id: PATTERN-04
+    name: "MoE Audit"
+    category: audit
+    archetype: AUDIT
+    
+    description: |
+      Expert panel document review. Multiple experts examine a document
+      from their specialized perspectives, identifying gaps, inconsistencies,
+      and issues.
+    
+    when_to_use:
+      ideal:
+        - "Document review before handoff"
+        - "PRD, spec, or architecture review"
+        - "Multiple quality dimensions matter"
+        - "Want diverse expert perspectives on document"
+      avoid:
+        - "Simple checklist audit (use GAP-AUDIT)"
+        - "Single dimension review"
+    
+    input_contracts:
+      primary: "document"
+      notes: "PRD, spec, architecture doc, etc."
+    
+    output_contracts:
+      primary: "GAP-INVENTORY"
+      secondary: ["EXPERT-OPINION"]
+    
+    workflow:
+      phases:
+        - phase: 1
+          name: "Expert Panel Assembly"
+          purpose: "Select document-appropriate experts"
+          techniques:
+            - expert_selection
+          quality_gate: "Experts cover key quality dimensions"
+        
+        - phase: 2
+          name: "Independent Review"
+          purpose: "Each expert reviews from their lens"
+          techniques:
+            - completeness_verification
+            - consistency_check
+          output_artifact: "EXPERT-OPINION (per expert)"
+          quality_gate: "Each expert identifies specific issues"
+        
+        - phase: 3
+          name: "Finding Consolidation"
+          purpose: "Merge findings, remove duplicates, classify severity"
+          techniques:
+            - severity_scoring
+            - deduplication
+          output_artifact: "GAP-INVENTORY"
+          quality_gate: "All findings classified and prioritized"
+    
+    parameters:
+      expert_panel:
+        type: enum
+        default: "document_quality"
+        options:
+          document_quality: "Completeness, Clarity, Scope, Acceptance Criteria, Dependencies"
+          technical_review: "Architecture, Security, Performance, Scalability, Maintainability"
+          custom: "Specify custom experts"
+      
+      severity_threshold:
+        type: enum
+        default: "all"
+        options: ["critical_only", "high_and_above", "all"]
+    
+    scoring_rubrics:
+      primary: "SEVERITY-SCORING"
+    
+    domain_presets:
+      prd_review:
+        expert_panel: "document_quality"
+        severity_threshold: "all"
+      
+      architecture_review:
+        expert_panel: "technical_review"
+        severity_threshold: "high_and_above"
+
+  # ============================================================================
+  # PATTERN 5: TOURNAMENT-RANK
+  # ============================================================================
+
+  TOURNAMENT-RANK:
+    id: PATTERN-05
+    name: "Tournament Rank"
+    category: evaluation
+    archetype: EVAL
+    
+    description: |
+      Pure pairwise comparison ranking without expert panel overhead.
+      Efficient for ranking many options when multi-perspective analysis
+      is not needed.
+    
+    when_to_use:
+      ideal:
+        - "Many options to rank (>5)"
+        - "Single evaluation criterion"
+        - "Speed over depth"
+        - "Expert perspectives not valuable"
+      avoid:
+        - "Complex multi-stakeholder decision"
+        - "Few options where deeper analysis is worthwhile"
+    
+    input_contracts:
+      primary: "SOLUTION-CANDIDATES"
+    
+    output_contracts:
+      primary: "RANKED-SOLUTION-LIST"
+      secondary: ["COMPARISON-PAIR"]
+    
+    workflow:
+      phases:
+        - phase: 1
+          name: "Tournament Setup"
+          purpose: "Configure tournament format based on candidate count"
+          techniques:
+            - tournament_format_selection
+          quality_gate: "Appropriate format selected"
+        
+        - phase: 2
+          name: "Pairwise Comparisons"
+          purpose: "Execute comparisons with position swapping"
+          techniques:
+            - pairwise_tournament
+          output_artifact: "COMPARISON-PAIR (multiple)"
+          quality_gate: "Position bias checked"
+        
+        - phase: 3
+          name: "Rating Aggregation"
+          purpose: "Convert comparisons to ratings"
+          techniques:
+            - bradley_terry_aggregation
+          output_artifact: "RANKED-SOLUTION-LIST"
+          quality_gate: "Confidence intervals computed"
+    
+    parameters:
+      tournament_format:
+        type: enum
+        default: "auto"
+        options:
+          auto: "Select based on candidate count"
+          round_robin: "Every pair compared (n≤10)"
+          swiss: "Adaptive pairing (n>10)"
+      
+      comparison_count:
+        type: integer
+        default: 3
+        min: 1
+        max: 5
+        description: "Comparisons per pair"
+      
+      ranking_method:
+        type: enum
+        default: "bradley_terry"
+        options: ["bradley_terry", "elo", "borda_count"]
+      
+      bias_mitigation:
+        type: boolean
+        default: true
+        description: "Whether to position-swap close comparisons"
+    
+    scoring_rubrics:
+      primary: "BRADLEY-TERRY"
+      alternatives: ["ELO", "BORDA-COUNT"]
+    
+    quality_gates:
+      - gate: "sufficient_comparisons"
+        condition: "Each item compared 3+ times"
+        severity: warning
+      
+      - gate: "position_bias_mitigated"
+        condition: "Close calls have position-swapped verification"
+        severity: warning
+
+  # ============================================================================
+  # PATTERN 6: ADVERSARIAL-VALIDATE
+  # ============================================================================
+
+  ADVERSARIAL-VALIDATE:
+    id: PATTERN-06
+    name: "Adversarial Validate"
+    category: validation
+    archetype: VALID
+    
+    description: |
+      Red/blue team stress testing of a solution, decision, or strategy.
+      Iterative attack-defense cycles with experience pool integration
+      to avoid repeating known failure patterns.
+    
+    when_to_use:
+      ideal:
+        - "High-stakes decision before commitment"
+        - "Strategy validation"
+        - "Architecture review"
+        - "Policy or process validation"
+      avoid:
+        - "Low-stakes, reversible decisions"
+        - "Time pressure prevents iteration"
+    
+    input_contracts:
+      primary: "SOLUTION-CANDIDATE"
+      secondary: ["RANKED-SOLUTION-LIST"]
+      notes: "Typically the winner from MOE-EVALUATE"
+    
+    output_contracts:
+      primary: "RISK-ASSESSMENT"
+    
+    workflow:
+      phases:
+        - phase: 1
+          name: "Attack Surface Analysis"
+          purpose: "Identify dimensions to probe"
+          techniques:
+            - assumption_extraction
+            - vulnerability_mapping
+          output_artifact: "Attack surface inventory"
+          quality_gate: "Key assumptions surfaced"
+        
+        - phase: 2
+          name: "Red Team Attack"
+          purpose: "Generate substantive challenges"
+          techniques:
+            - disconfirmation_hunt
+            - pre_mortem_analysis
+          output_artifact: "Attack findings"
+          quality_gate: "Attacks are substantive, not trivial"
+        
+        - phase: 3
+          name: "Blue Team Defense"
+          purpose: "Respond to attacks with mitigations"
+          techniques:
+            - steel_manning
+            - mitigation_design
+          output_artifact: "Defense responses"
+          quality_gate: "Each attack addressed"
+        
+        - phase: 4
+          name: "Iterate or Conclude"
+          purpose: "Decide if more cycles needed"
+          techniques:
+            - convergence_check
+          output_artifact: "Iteration decision"
+          quality_gate: "Convergence criteria applied"
+        
+        - phase: 5
+          name: "Risk Synthesis"
+          purpose: "Compile final risk assessment"
+          techniques:
+            - risk_aggregation
+            - confidence_calibration
+          output_artifact: "RISK-ASSESSMENT"
+          quality_gate: "Go/no-go recommendation included"
+    
+    parameters:
+      max_iterations:
+        type: integer
+        default: 3
+        min: 1
+        max: 5
+        description: "Maximum red/blue cycles"
+      
+      attack_categories:
+        type: list
+        default: ["assumptions", "edge_cases", "dependencies", "security", "scalability"]
+        description: "Categories to probe"
+      
+      convergence_threshold:
+        type: enum
+        default: "no_new_critical"
+        options:
+          no_new_critical: "Stop when no new critical issues"
+          all_addressed: "Stop when all issues have mitigation"
+          iteration_limit: "Stop at max_iterations regardless"
+      
+      include_experience_pool:
+        type: boolean
+        default: true
+        description: "Whether to load known failure patterns"
+    
+    scoring_rubrics:
+      primary: "SEVERITY-SCORING"
+    
+    quality_gates:
+      - gate: "substantive_attacks"
+        condition: "Attacks are non-trivial and relevant"
+        severity: error
+        remediation: "Push for deeper analysis"
+      
+      - gate: "defenses_address_attacks"
+        condition: "Each attack has a response"
+        severity: error
+      
+      - gate: "has_go_no_go"
+        condition: "Final assessment includes recommendation"
+        severity: error
+
+  # ============================================================================
+  # PATTERN 7: RESEARCH-SYNTHESIZE
+  # ============================================================================
+
+  RESEARCH-SYNTHESIZE:
+    id: PATTERN-07
+    name: "Research Synthesize"
+    category: synthesis
+    archetype: SYNTH
+    
+    description: |
+      Multi-source research consolidation with conflict resolution and
+      confidence tiering. Handles outputs from multiple AI models or
+      human sources.
+    
+    when_to_use:
+      ideal:
+        - "Multiple research sources to consolidate"
+        - "Outputs from Claude, Gemini, GPT to reconcile"
+        - "Literature review synthesis"
+        - "Competitive intelligence consolidation"
+      avoid:
+        - "Single source summarization"
+        - "No conflicting information"
+    
+    input_contracts:
+      primary: "Multiple source documents"
+    
+    output_contracts:
+      primary: "Unified findings"
+      secondary: ["SOLUTION-TAXONOMY"]
+    
+    workflow:
+      phases:
+        - phase: 1
+          name: "Source Inventory"
+          purpose: "Catalog sources with provenance metadata"
+          techniques:
+            - source_provenance_tracking
+          quality_gate: "All sources cataloged with reliability scores"
+        
+        - phase: 2
+          name: "Claim Extraction"
+          purpose: "Extract discrete claims from each source"
+          techniques:
+            - claim_extraction
+          output_artifact: "Claim inventory"
+          quality_gate: "Claims atomic and attributable"
+        
+        - phase: 3
+          name: "Cross-Reference Analysis"
+          purpose: "Identify agreements, conflicts, and gaps"
+          techniques:
+            - corroboration_matrix
+            - conflict_detection
+          output_artifact: "Consistency matrix"
+          quality_gate: "Conflicts explicitly identified"
+        
+        - phase: 4
+          name: "Conflict Resolution"
+          purpose: "Resolve or document conflicts"
+          techniques:
+            - source_weighting
+            - confidence_tiering
+          output_artifact: "Resolution decisions"
+          quality_gate: "Each conflict has resolution or escalation"
+        
+        - phase: 5
+          name: "Unified Synthesis"
+          purpose: "Produce coherent consolidated output"
+          techniques:
+            - unified_framework_synthesis
+          output_artifact: "Unified findings"
+          quality_gate: "Single coherent narrative"
+    
+    parameters:
+      source_weighting:
+        type: enum
+        default: "reliability_based"
+        options:
+          equal: "All sources weighted equally"
+          reliability_based: "Weight by source reliability"
+          recency_based: "Prefer more recent sources"
+          custom: "Specify custom weights"
+      
+      conflict_handling:
+        type: enum
+        default: "document"
+        options:
+          document: "Preserve both views with note"
+          prefer_majority: "Go with majority view"
+          prefer_primary: "Prefer primary sources"
+          escalate: "Flag for human resolution"
+      
+      confidence_tiers:
+        type: list
+        default: ["high", "medium", "low"]
+        description: "Confidence tier labels"
+    
+    scoring_rubrics:
+      primary: "CONFIDENCE-CALIBRATION"
+    
+    quality_gates:
+      - gate: "all_sources_represented"
+        condition: "Every source contributes to synthesis"
+        severity: warning
+      
+      - gate: "conflicts_addressed"
+        condition: "No unaddressed conflicts"
+        severity: error
+
+  # ============================================================================
+  # PATTERN 8: GAP-AUDIT
+  # ============================================================================
+
+  GAP-AUDIT:
+    id: PATTERN-08
+    name: "Gap Audit"
+    category: audit
+    archetype: AUDIT
+    
+    description: |
+      Systematic completeness and compliance checking against a reference
+      standard, checklist, or schema. No expert panel—direct verification.
+    
+    when_to_use:
+      ideal:
+        - "Checklist-based verification"
+        - "Compliance audit"
+        - "Schema validation"
+        - "Coverage analysis"
+      avoid:
+        - "Need diverse perspectives (use MOE-AUDIT)"
+        - "No clear reference standard"
+    
+    input_contracts:
+      primary: "document or artifact"
+      secondary: ["reference_standard"]
+    
+    output_contracts:
+      primary: "GAP-INVENTORY"
+    
+    workflow:
+      phases:
+        - phase: 1
+          name: "Reference Loading"
+          purpose: "Load checklist/standard to audit against"
+          techniques:
+            - reference_mapping
+          quality_gate: "Reference criteria enumerated"
+        
+        - phase: 2
+          name: "Item-by-Item Verification"
+          purpose: "Check each criterion"
+          techniques:
+            - completeness_verification
+            - consistency_check
+          output_artifact: "Verification results"
+          quality_gate: "Every criterion checked"
+        
+        - phase: 3
+          name: "Gap Classification"
+          purpose: "Classify and prioritize findings"
+          techniques:
+            - severity_scoring
+          output_artifact: "GAP-INVENTORY"
+          quality_gate: "All gaps classified"
+    
+    parameters:
+      reference_type:
+        type: enum
+        default: "checklist"
+        options: ["checklist", "schema", "standard", "template"]
+      
+      severity_classification:
+        type: boolean
+        default: true
+    
+    scoring_rubrics:
+      primary: "SEVERITY-SCORING"
+
+  # ============================================================================
+  # PATTERN 9: TRANSFORM-STRUCTURE
+  # ============================================================================
+
+  TRANSFORM-STRUCTURE:
+    id: PATTERN-09
+    name: "Transform Structure"
+    category: transformation
+    archetype: XFORM
+    
+    description: |
+      Convert unstructured or semi-structured input into validated
+      structured output. Includes contamination detection and quality scoring.
+    
+    when_to_use:
+      ideal:
+        - "Format conversion needed"
+        - "Unstructured → JTBD, schema, etc."
+        - "Data normalization"
+      avoid:
+        - "Already structured input"
+        - "No target schema"
+    
+    input_contracts:
+      primary: "Unstructured input"
+    
+    output_contracts:
+      primary: "Structured artifact"
+      options: ["PROBLEM-STATEMENT", "SOLUTION-CANDIDATE", "custom schema"]
+    
+    workflow:
+      phases:
+        - phase: 1
+          name: "Input Analysis"
+          purpose: "Parse and understand input"
+          techniques:
+            - component_extraction
+            - input_classification
+          quality_gate: "Key components identified"
+        
+        - phase: 2
+          name: "Schema Mapping"
+          purpose: "Map components to target schema"
+          techniques:
+            - schema_mapping
+            - inference_flagging
+          quality_gate: "All required fields mapped"
+        
+        - phase: 3
+          name: "Contamination Detection"
+          purpose: "Check for category violations"
+          techniques:
+            - contamination_detection
+          quality_gate: "No contamination or flagged"
+        
+        - phase: 4
+          name: "Output Generation"
+          purpose: "Produce structured artifact"
+          techniques:
+            - canonical_formatting
+            - completeness_scoring
+          output_artifact: "Structured artifact"
+          quality_gate: "Validation score ≥ 3/5"
+    
+    parameters:
+      target_schema:
+        type: enum
+        default: "problem_statement"
+        options: ["problem_statement", "jtbd", "solution_candidate", "custom"]
+      
+      strict_mode:
+        type: boolean
+        default: false
+        description: "Reject if cannot cleanly extract all components"
+
+  # ============================================================================
+  # PATTERN 10: ELICIT-EXTRACT
+  # ============================================================================
+
+  ELICIT-EXTRACT:
+    id: PATTERN-10
+    name: "Elicit Extract"
+    category: elicitation
+    archetype: ELICIT
+    
+    description: |
+      Adaptive knowledge extraction through structured questioning.
+      Progressively gathers information until completion criteria met.
+    
+    when_to_use:
+      ideal:
+        - "Requirements gathering"
+        - "Interview-style extraction"
+        - "Decision documentation"
+        - "Context building"
+      avoid:
+        - "Information already available"
+        - "No human in loop"
+    
+    input_contracts:
+      primary: "Initial context"
+    
+    output_contracts:
+      primary: "PROBLEM-STATEMENT or documented knowledge"
+    
+    workflow:
+      phases:
+        - phase: 1
+          name: "Initial Assessment"
+          purpose: "Understand what's known and what's missing"
+          techniques:
+            - gap_identification
+          quality_gate: "Key unknowns identified"
+        
+        - phase: 2
+          name: "Question Generation"
+          purpose: "Generate targeted questions"
+          techniques:
+            - progressive_disclosure_questioning
+          output_artifact: "Question set"
+          quality_gate: "Questions are specific and actionable"
+        
+        - phase: 3
+          name: "Response Integration"
+          purpose: "Incorporate answers into knowledge base"
+          techniques:
+            - context_synthesis
+          quality_gate: "Answers integrated coherently"
+        
+        - phase: 4
+          name: "Completion Check"
+          purpose: "Determine if more questions needed"
+          techniques:
+            - completion_criteria_check
+          quality_gate: "Completion criteria evaluated"
+    
+    parameters:
+      max_questions:
+        type: integer
+        default: 10
+        min: 3
+        max: 20
+      
+      question_style:
+        type: enum
+        default: "focused"
+        options: ["focused", "exploratory", "confirmatory"]
+      
+      completion_threshold:
+        type: number
+        default: 0.8
+        description: "Confidence threshold for completion"
+
+# ============================================================================
+# PATTERN COMPOSITION MATRIX
+# ============================================================================
+
+composition_matrix:
+  description: |
+    Valid pattern chains with synergy ratings.
+    Use this to design multi-pattern workflows.
+  
+  high_synergy:
+    - chain: ["MOE-GENERATE", "MOE-EVALUATE"]
+      purpose: "Generate options, then evaluate"
+      synergy: 5
+    
+    - chain: ["MOE-EVALUATE", "ADVERSARIAL-VALIDATE"]
+      purpose: "Evaluate options, then stress-test winner"
+      synergy: 5
+    
+    - chain: ["RESEARCH-SYNTHESIZE", "MOE-EVALUATE"]
+      purpose: "Synthesize research, then evaluate implications"
+      synergy: 5
+    
+    - chain: ["MOE-IDENTIFY", "MOE-GENERATE"]
+      purpose: "Identify problems, then generate solutions"
+      synergy: 4
+    
+    - chain: ["GAP-AUDIT", "TRANSFORM-STRUCTURE"]
+      purpose: "Find gaps, then structure remediation"
+      synergy: 4
+  
+  moderate_synergy:
+    - chain: ["TOURNAMENT-RANK", "ADVERSARIAL-VALIDATE"]
+      purpose: "Quick rank, then validate winner"
+      synergy: 3
+    
+    - chain: ["ELICIT-EXTRACT", "MOE-GENERATE"]
+      purpose: "Extract requirements, then generate solutions"
+      synergy: 3
+  
+  anti_patterns:
+    - chain: ["MOE-EVALUATE", "MOE-EVALUATE"]
+      problem: "Recursion without new information"
+    
+    - chain: ["ADVERSARIAL-VALIDATE", "ADVERSARIAL-VALIDATE"]
+      problem: "Infinite validation regress"
+    
+    - chain: ["MOE-AUDIT", "GAP-AUDIT"]
+      problem: "Redundant audit patterns"
+
+# ============================================================================
+# OUTPUT MODE: PROMPT GENERATION
+# ============================================================================
+
+prompt_output_mode:
+  description: |
+    When output_mode = "prompt", patterns generate portable prompts
+    for use with other models (Gemini, GPT, etc.) instead of artifacts.
+  
+  prompt_template: |
+    # {pattern_name} Analysis
+    
+    ## Context
+    {context_from_parameters}
+    
+    ## Task
+    {task_description}
+    
+    ## Methodology
+    {technique_descriptions}
+    
+    ## Output Format
+    {output_format_specification}
+    
+    ## Quality Criteria
+    {quality_gates_as_criteria}
+  
+  model_adaptations:
+    gemini:
+      - "Use structured output format"
+      - "Leverage grounding for factual claims"
+    
+    gpt:
+      - "Use chain-of-thought prompting"
+      - "Request step-by-step reasoning"
+    
+    claude:
+      - "Use XML tags for structure"
+      - "Leverage extended thinking for complex analysis"
+
+# ============================================================================
+# VERSION HISTORY
+# ============================================================================
+
+version_history:
+  - version: "1.0"
+    date: "2026-01-31"
+    changes:
+      - "Initial release with 10 parameterized patterns"
+      - "Selection guide with decision tree"
+      - "Composition matrix with synergy ratings"
+      - "Prompt output mode for multi-model workflows"
+      - "Domain presets for architecture, product, strategy"

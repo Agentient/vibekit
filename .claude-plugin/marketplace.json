@@ -1,0 +1,36 @@
+{
+  "name": "agentient-skills-marketplace",
+  "description": "Advanced AI skills for research, evaluation, documentation, and requirements engineering",
+  "owner": {
+    "name": "Agentient",
+    "url": "https://agentient.com"
+  },
+  "plugins": [
+    {
+      "name": "skills-factory",
+      "description": "Core meta-skill and foundational capabilities",
+      "source": {
+        "type": "github",
+        "repo": "agentient/skills-factory"
+      }
+    },
+    {
+      "name": "assessment-suite",
+      "description": "AI transformation assessment toolkit",
+      "source": {
+        "type": "github",
+        "repo": "agentient/skills-factory",
+        "path": "plugins/assessment-suite"
+      }
+    },
+    {
+      "name": "career-suite",
+      "description": "Career development and job fit tools",
+      "source": {
+        "type": "github",
+        "repo": "agentient/skills-factory",
+        "path": "plugins/career-suite"
+      }
+    }
+  ]
+}

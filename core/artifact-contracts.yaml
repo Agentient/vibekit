@@ -1,0 +1,1430 @@
+# ============================================================================
+# ARTIFACT CONTRACT CATALOG
+# ============================================================================
+# Version: 1.0
+# Purpose: Standardized artifact schemas for skill composition
+# 
+# This catalog enables:
+#   1. Loose coupling between skills via well-defined contracts
+#   2. Validation of artifacts before handoff
+#   3. Compatibility checking for skill chains
+#   4. Consistent data structures across the meta-skill system
+#
+# Design principles:
+#   - MECE: Each contract covers a distinct artifact type
+#   - Minimal: Only required fields; extensions via optional fields
+#   - Traceable: Every artifact includes provenance metadata
+#   - Composable: Clear producer/consumer relationships
+# ============================================================================
+
+version: "1.0"
+last_updated: "2026-01-31"
+
+# ============================================================================
+# COMMON METADATA SCHEMA
+# ============================================================================
+# All artifacts inherit these fields
+
+common_metadata:
+  description: "Base fields present in every artifact"
+  fields:
+    artifact_id:
+      type: string
+      format: "UUID or [CONTRACT_TYPE]-[TIMESTAMP]"
+      required: true
+      description: "Unique identifier for this artifact instance"
+    
+    contract_type:
+      type: enum
+      required: true
+      description: "Which contract this artifact conforms to"
+    
+    created_at:
+      type: datetime
+      format: "ISO 8601"
+      required: true
+      description: "When this artifact was created"
+    
+    created_by:
+      type: string
+      required: true
+      description: "Skill ID or agent that produced this artifact"
+    
+    confidence:
+      type: number
+      range: [0, 1]
+      required: true
+      description: "Overall confidence in artifact quality (0-1)"
+    
+    provenance:
+      type: object
+      required: false
+      description: "Chain of custody and source tracking"
+      fields:
+        source_artifacts:
+          type: list[string]
+          description: "Artifact IDs this was derived from"
+        technique_used:
+          type: string
+          description: "Primary technique that generated this"
+        iteration:
+          type: integer
+          description: "Iteration number if produced iteratively"
+
+# ============================================================================
+# CONTRACT 1: PROBLEM-STATEMENT
+# ============================================================================
+
+contracts:
+
+  PROBLEM-STATEMENT:
+    id: CONTRACT-01
+    name: "Problem Statement"
+    category: input
+    
+    description: |
+      Structured representation of a problem to be solved. Entry point for
+      most skill chains. Can be generated from unstructured input via XFORM
+      archetype skills or provided directly.
+    
+    schema:
+      # Inherited: artifact_id, contract_type, created_at, created_by, confidence, provenance
+      
+      statement:
+        type: string
+        required: true
+        description: "The problem statement in clear, actionable language"
+        validation: "Must describe a problem, not a solution"
+      
+      jtbd_format:
+        type: object
+        required: false
+        description: "Optional Jobs-To-Be-Done structured format"
+        fields:
+          situation:
+            type: string
+            description: "When/context in which the problem arises"
+          motivation:
+            type: string
+            description: "What the user wants to do (not HOW)"
+          outcome:
+            type: string
+            description: "Desired result/benefit"
+      
+      context:
+        type: object
+        required: true
+        description: "Contextual information about the problem"
+        fields:
+          domain:
+            type: enum
+            options: [product, architecture, strategy, research, security, operations, content]
+            description: "Primary domain classification"
+          stakeholders:
+            type: list[string]
+            description: "Who is affected by this problem"
+          constraints:
+            type: list[string]
+            description: "Hard constraints that solutions must respect"
+          assumptions:
+            type: list[string]
+            description: "Stated assumptions about the problem space"
+      
+      success_criteria:
+        type: list[object]
+        required: false
+        description: "How we know the problem is solved"
+        fields:
+          criterion:
+            type: string
+          measurable:
+            type: boolean
+          priority:
+            type: enum
+            options: [must_have, should_have, nice_to_have]
+      
+      solution_contamination:
+        type: object
+        required: false
+        description: "Flags if problem statement includes solution hints"
+        fields:
+          detected:
+            type: boolean
+          flagged_phrases:
+            type: list[string]
+          cleaned_statement:
+            type: string
+    
+    validation_rules:
+      - rule: "statement_not_empty"
+        condition: "statement.length > 10"
+        severity: error
+        message: "Problem statement must be substantive"
+      
+      - rule: "no_solution_contamination"
+        condition: "solution_contamination.detected == false OR solution_contamination.cleaned_statement exists"
+        severity: warning
+        message: "Problem statement should describe problem, not solution"
+      
+      - rule: "domain_specified"
+        condition: "context.domain is not null"
+        severity: error
+        message: "Domain classification is required for routing"
+      
+      - rule: "has_stakeholders"
+        condition: "context.stakeholders.length >= 1"
+        severity: warning
+        message: "At least one stakeholder should be identified"
+    
+    compatibility:
+      produced_by:
+        - skill_types: [XFORM]
+          examples: ["jtbd-formatter", "problem-extractor"]
+        - skill_types: [ELICIT]
+          examples: ["requirements-gatherer", "discovery-interview"]
+        - source: "direct_input"
+          description: "User provides structured problem"
+      
+      consumed_by:
+        - skill_types: [EVAL, SYNTH, GEN, ORCH]
+          purpose: "Entry point for analysis/generation workflows"
+        - specific_skills:
+            - "generate-ideas"
+            - "solution-generator"
+            - "research-consolidator"
+    
+    examples:
+      minimal: |
+        artifact_id: "PS-2026-01-31-001"
+        contract_type: "PROBLEM-STATEMENT"
+        created_at: "2026-01-31T10:00:00Z"
+        created_by: "user-input"
+        confidence: 0.85
+        statement: "Users abandon the onboarding flow at step 3"
+        context:
+          domain: "product"
+          stakeholders: ["new users", "product team"]
+          constraints: []
+          assumptions: ["Current onboarding has 5 steps"]
+      
+      complete: |
+        artifact_id: "PS-2026-01-31-002"
+        contract_type: "PROBLEM-STATEMENT"
+        created_at: "2026-01-31T10:00:00Z"
+        created_by: "jtbd-formatter"
+        confidence: 0.92
+        statement: "Users abandon the onboarding flow at step 3"
+        jtbd_format:
+          situation: "When a new user is setting up their account"
+          motivation: "I want to complete setup quickly"
+          outcome: "So I can start using the core features"
+        context:
+          domain: "product"
+          stakeholders: ["new users", "product team", "customer success"]
+          constraints: ["Cannot remove step 3 entirely", "Must maintain compliance checks"]
+          assumptions: ["Drop-off is due to friction, not intent"]
+        success_criteria:
+          - criterion: "Step 3 completion rate increases to 80%"
+            measurable: true
+            priority: "must_have"
+          - criterion: "Average time on step 3 decreases by 30%"
+            measurable: true
+            priority: "should_have"
+
+  # ============================================================================
+  # CONTRACT 2: SOLUTION-CANDIDATES
+  # ============================================================================
+
+  SOLUTION-CANDIDATES:
+    id: CONTRACT-02
+    name: "Solution Candidates List"
+    category: intermediate
+    
+    description: |
+      A collection of potential solutions to a problem. Typically produced by
+      ideation/generation skills and consumed by evaluation skills. Each solution
+      is a SOLUTION-CANDIDATE contract instance.
+    
+    schema:
+      problem_reference:
+        type: string
+        required: true
+        description: "artifact_id of the PROBLEM-STATEMENT this responds to"
+      
+      generation_method:
+        type: object
+        required: true
+        description: "How candidates were generated"
+        fields:
+          technique:
+            type: string
+            description: "Generation technique used (brainstorming, analogy, etc.)"
+          constraints_applied:
+            type: list[string]
+            description: "Which constraints were considered during generation"
+          diversity_strategy:
+            type: enum
+            options: [none, category_balance, perspective_balance, random]
+            description: "How diversity was ensured"
+      
+      candidates:
+        type: list[SOLUTION-CANDIDATE]
+        required: true
+        min_length: 2
+        description: "The solution candidates"
+      
+      coverage_assessment:
+        type: object
+        required: false
+        description: "Assessment of solution space coverage"
+        fields:
+          categories_covered:
+            type: list[string]
+          known_gaps:
+            type: list[string]
+          saturation_score:
+            type: number
+            range: [0, 1]
+            description: "Estimate of how much of solution space is covered"
+    
+    validation_rules:
+      - rule: "minimum_candidates"
+        condition: "candidates.length >= 2"
+        severity: error
+        message: "At least 2 candidates required for meaningful evaluation"
+      
+      - rule: "problem_linked"
+        condition: "problem_reference is valid artifact_id"
+        severity: error
+        message: "Must reference the problem being solved"
+      
+      - rule: "candidates_distinct"
+        condition: "all candidates have unique solution_id"
+        severity: error
+        message: "Candidate solutions must be distinct"
+      
+      - rule: "coverage_for_large_sets"
+        condition: "IF candidates.length > 5 THEN coverage_assessment exists"
+        severity: warning
+        message: "Large candidate sets should include coverage assessment"
+    
+    compatibility:
+      produced_by:
+        - skill_types: [GEN, ORCH]
+          examples: ["generate-ideas", "solution-brainstorm"]
+        - skill_types: [SYNTH]
+          examples: ["research-consolidator"]
+          notes: "When synthesizing options from multiple sources"
+      
+      consumed_by:
+        - skill_types: [EVAL]
+          purpose: "For ranking, comparison, selection"
+          examples: ["tournament-eval", "rice-prioritizer", "moe-panel"]
+        - skill_types: [AUDIT]
+          purpose: "For completeness/feasibility checking"
+
+  # ============================================================================
+  # CONTRACT 3: SOLUTION-CANDIDATE
+  # ============================================================================
+
+  SOLUTION-CANDIDATE:
+    id: CONTRACT-03
+    name: "Solution Candidate"
+    category: primitive
+    
+    description: |
+      A single proposed solution to a problem. Atomic unit within SOLUTION-CANDIDATES.
+      Contains enough detail for evaluation without implementation specifics.
+    
+    schema:
+      solution_id:
+        type: string
+        required: true
+        description: "Unique ID within the candidate set"
+      
+      name:
+        type: string
+        required: true
+        max_length: 100
+        description: "Short descriptive name"
+      
+      description:
+        type: string
+        required: true
+        description: "Clear explanation of the solution approach"
+      
+      category:
+        type: string
+        required: false
+        description: "Taxonomy category for grouping similar solutions"
+      
+      key_features:
+        type: list[string]
+        required: true
+        min_length: 1
+        description: "Distinguishing characteristics"
+      
+      estimated_effort:
+        type: object
+        required: false
+        description: "Rough effort estimate"
+        fields:
+          level:
+            type: enum
+            options: [trivial, small, medium, large, x_large]
+          rationale:
+            type: string
+      
+      risks:
+        type: list[object]
+        required: false
+        description: "Known risks with this approach"
+        fields:
+          risk:
+            type: string
+          likelihood:
+            type: enum
+            options: [low, medium, high]
+          impact:
+            type: enum
+            options: [low, medium, high]
+      
+      prerequisites:
+        type: list[string]
+        required: false
+        description: "What must exist before this can be implemented"
+      
+      constraints_addressed:
+        type: list[string]
+        required: false
+        description: "Which problem constraints this solution addresses"
+    
+    validation_rules:
+      - rule: "has_name_and_description"
+        condition: "name exists AND description.length > 20"
+        severity: error
+        message: "Solution must have name and substantive description"
+      
+      - rule: "has_features"
+        condition: "key_features.length >= 1"
+        severity: error
+        message: "At least one distinguishing feature required"
+      
+      - rule: "no_duplicate_features"
+        condition: "key_features are unique"
+        severity: warning
+        message: "Features should not be duplicated"
+    
+    compatibility:
+      produced_by:
+        - skill_types: [GEN]
+          notes: "Individual solution generation"
+        - source: "expert_input"
+          description: "Subject matter expert contribution"
+      
+      consumed_by:
+        - contract: "SOLUTION-CANDIDATES"
+          relationship: "aggregated_into"
+        - contract: "COMPARISON-PAIR"
+          relationship: "paired_for_evaluation"
+
+  # ============================================================================
+  # CONTRACT 4: EVALUATION-MATRIX
+  # ============================================================================
+
+  EVALUATION-MATRIX:
+    id: CONTRACT-04
+    name: "Evaluation Matrix"
+    category: intermediate
+    
+    description: |
+      Multi-criteria evaluation of solution candidates. Maps solutions against
+      weighted criteria with scores and rationale. Foundation for ranking and
+      selection decisions.
+    
+    schema:
+      problem_reference:
+        type: string
+        required: true
+        description: "artifact_id of the source PROBLEM-STATEMENT"
+      
+      candidates_reference:
+        type: string
+        required: true
+        description: "artifact_id of the SOLUTION-CANDIDATES being evaluated"
+      
+      evaluation_method:
+        type: object
+        required: true
+        description: "How evaluation was conducted"
+        fields:
+          technique:
+            type: enum
+            options: [weighted_matrix, pairwise_tournament, expert_panel, hybrid]
+          criteria_source:
+            type: string
+            description: "Where criteria came from (domain_default, problem_derived, user_specified)"
+          bias_mitigation:
+            type: list[string]
+            description: "What was done to reduce evaluation bias"
+      
+      criteria:
+        type: list[object]
+        required: true
+        min_length: 2
+        description: "Evaluation criteria definitions"
+        fields:
+          criterion_id:
+            type: string
+          name:
+            type: string
+          definition:
+            type: string
+            description: "What this criterion measures"
+          weight:
+            type: number
+            range: [0, 1]
+            description: "Relative importance (weights should sum to 1)"
+          scale:
+            type: object
+            fields:
+              min: { type: number }
+              max: { type: number }
+              labels: { type: object, description: "score -> label mapping" }
+      
+      scores:
+        type: list[object]
+        required: true
+        description: "Score matrix: solution × criterion"
+        fields:
+          solution_id:
+            type: string
+          criterion_scores:
+            type: list[object]
+            fields:
+              criterion_id:
+                type: string
+              raw_score:
+                type: number
+              weighted_score:
+                type: number
+              rationale:
+                type: string
+                description: "Why this score was given"
+          total_weighted_score:
+            type: number
+      
+      sensitivity_analysis:
+        type: object
+        required: false
+        description: "How robust is the evaluation to weight changes"
+        fields:
+          weight_sensitivity:
+            type: list[object]
+            description: "Which weight changes would flip the winner"
+          confidence_in_ranking:
+            type: number
+            range: [0, 1]
+    
+    validation_rules:
+      - rule: "weights_sum_to_one"
+        condition: "sum(criteria[].weight) between 0.99 and 1.01"
+        severity: error
+        message: "Criteria weights must sum to approximately 1.0"
+      
+      - rule: "all_solutions_scored"
+        condition: "scores.length == candidates.length"
+        severity: error
+        message: "Every candidate must have scores"
+      
+      - rule: "all_criteria_applied"
+        condition: "for each score: criterion_scores.length == criteria.length"
+        severity: error
+        message: "Every criterion must be applied to every solution"
+      
+      - rule: "has_rationale"
+        condition: "every criterion_score has non-empty rationale"
+        severity: warning
+        message: "Scores should include rationale for traceability"
+    
+    compatibility:
+      produced_by:
+        - skill_types: [EVAL]
+          examples: ["rice-prioritizer", "moe-panel", "weighted-decision-matrix"]
+      
+      consumed_by:
+        - contract: "RANKED-SOLUTION-LIST"
+          purpose: "Convert matrix to ranked order"
+        - skill_types: [VALID]
+          purpose: "Validate evaluation methodology"
+        - skill_types: [GEN]
+          purpose: "Generate decision document"
+
+  # ============================================================================
+  # CONTRACT 5: RANKED-SOLUTION-LIST
+  # ============================================================================
+
+  RANKED-SOLUTION-LIST:
+    id: CONTRACT-05
+    name: "Ranked Solution List"
+    category: output
+    
+    description: |
+      Ordered list of solutions with final scores/rankings. Terminal output
+      of evaluation workflows. May derive from EVALUATION-MATRIX or direct
+      tournament ranking.
+    
+    schema:
+      problem_reference:
+        type: string
+        required: true
+      
+      evaluation_reference:
+        type: string
+        required: false
+        description: "artifact_id of source EVALUATION-MATRIX (if applicable)"
+      
+      ranking_method:
+        type: object
+        required: true
+        fields:
+          technique:
+            type: enum
+            options: [weighted_sum, bradley_terry, elo, borda_count, custom]
+          iterations:
+            type: integer
+            description: "For tournament methods, number of comparison rounds"
+          statistical_confidence:
+            type: number
+            range: [0, 1]
+      
+      rankings:
+        type: list[object]
+        required: true
+        description: "Solutions in rank order"
+        fields:
+          rank:
+            type: integer
+            minimum: 1
+          solution_id:
+            type: string
+          solution_name:
+            type: string
+          final_score:
+            type: number
+          score_breakdown:
+            type: object
+            description: "How the score was computed"
+          rationale:
+            type: string
+            description: "Why this solution earned this rank"
+          recommendation:
+            type: enum
+            options: [strongly_recommend, recommend, consider, not_recommended]
+      
+      pareto_analysis:
+        type: object
+        required: false
+        description: "Which solutions are Pareto-optimal"
+        fields:
+          pareto_optimal:
+            type: list[string]
+            description: "solution_ids that are non-dominated"
+          dominated_by:
+            type: object
+            description: "For each non-optimal solution, which solutions dominate it"
+      
+      ties:
+        type: list[object]
+        required: false
+        description: "Solutions that tied and how ties were broken"
+        fields:
+          tied_solutions:
+            type: list[string]
+          tiebreaker_used:
+            type: string
+      
+      recommendation_summary:
+        type: object
+        required: true
+        description: "Top-level recommendation"
+        fields:
+          top_pick:
+            type: string
+            description: "solution_id of recommended choice"
+          confidence:
+            type: number
+            range: [0, 1]
+          key_tradeoff:
+            type: string
+            description: "What you give up by choosing this"
+          runner_up:
+            type: string
+            description: "Best alternative if top pick fails"
+    
+    validation_rules:
+      - rule: "rankings_complete"
+        condition: "rankings covers all evaluated solutions"
+        severity: error
+        message: "All solutions must be ranked"
+      
+      - rule: "no_rank_gaps"
+        condition: "ranks are consecutive integers starting at 1"
+        severity: error
+        message: "Ranking must be consecutive"
+      
+      - rule: "has_recommendation"
+        condition: "recommendation_summary.top_pick exists"
+        severity: error
+        message: "Must identify a top recommendation"
+    
+    compatibility:
+      produced_by:
+        - skill_types: [EVAL]
+          examples: ["tournament-eval", "rice-prioritizer"]
+        - source: "EVALUATION-MATRIX"
+          transformation: "sort_by_weighted_score"
+      
+      consumed_by:
+        - skill_types: [VALID]
+          purpose: "Stress-test the winner"
+        - skill_types: [GEN]
+          purpose: "Generate decision document"
+        - destination: "human_decision"
+          description: "Final output for human decision-maker"
+
+  # ============================================================================
+  # CONTRACT 6: SOLUTION-TAXONOMY
+  # ============================================================================
+
+  SOLUTION-TAXONOMY:
+    id: CONTRACT-06
+    name: "Solution Taxonomy"
+    category: intermediate
+    
+    description: |
+      Categorization structure for organizing solutions. Provides conceptual
+      groupings that aid understanding and ensure diversity in evaluation.
+      Useful for large solution spaces.
+    
+    schema:
+      problem_reference:
+        type: string
+        required: true
+      
+      taxonomy_type:
+        type: enum
+        required: true
+        options: [hierarchical, flat, matrix, network]
+        description: "Structure type for the taxonomy"
+      
+      categories:
+        type: list[object]
+        required: true
+        description: "Category definitions"
+        fields:
+          category_id:
+            type: string
+          name:
+            type: string
+          description:
+            type: string
+          parent_category:
+            type: string
+            required: false
+            description: "For hierarchical taxonomies"
+          distinguishing_features:
+            type: list[string]
+            description: "What makes solutions in this category distinct"
+      
+      solution_assignments:
+        type: list[object]
+        required: true
+        description: "Which solutions belong to which categories"
+        fields:
+          solution_id:
+            type: string
+          primary_category:
+            type: string
+          secondary_categories:
+            type: list[string]
+            required: false
+          assignment_confidence:
+            type: number
+            range: [0, 1]
+      
+      coverage_map:
+        type: object
+        required: false
+        description: "How well solutions cover the taxonomy"
+        fields:
+          category_counts:
+            type: object
+            description: "category_id -> count of solutions"
+          empty_categories:
+            type: list[string]
+            description: "Categories with no solutions"
+          overcrowded_categories:
+            type: list[string]
+            description: "Categories with disproportionate solutions"
+      
+      mece_verification:
+        type: object
+        required: false
+        description: "Is this taxonomy MECE?"
+        fields:
+          mutually_exclusive:
+            type: boolean
+            description: "Are categories non-overlapping?"
+          collectively_exhaustive:
+            type: boolean
+            description: "Do categories cover all solutions?"
+          violations:
+            type: list[string]
+    
+    validation_rules:
+      - rule: "all_solutions_assigned"
+        condition: "every solution has at least primary_category"
+        severity: error
+        message: "Every solution must be categorized"
+      
+      - rule: "categories_defined"
+        condition: "every assigned category_id exists in categories"
+        severity: error
+        message: "Assigned categories must be defined"
+      
+      - rule: "no_orphan_categories"
+        condition: "every category has at least one solution"
+        severity: warning
+        message: "Empty categories may indicate taxonomy issues"
+    
+    compatibility:
+      produced_by:
+        - skill_types: [SYNTH, XFORM]
+          examples: ["solution-classifier", "taxonomy-generator"]
+      
+      consumed_by:
+        - skill_types: [EVAL]
+          purpose: "Ensure diverse evaluation"
+        - skill_types: [AUDIT]
+          purpose: "Verify coverage of solution space"
+
+  # ============================================================================
+  # CONTRACT 7: GAP-INVENTORY
+  # ============================================================================
+
+  GAP-INVENTORY:
+    id: CONTRACT-07
+    name: "Gap Inventory"
+    category: output
+    
+    description: |
+      Structured list of identified gaps, issues, or missing elements. Primary
+      output of AUDIT archetype skills. Includes severity classification and
+      remediation recommendations.
+    
+    schema:
+      source_reference:
+        type: string
+        required: true
+        description: "artifact_id of what was audited"
+      
+      source_type:
+        type: enum
+        required: true
+        options: [document, solution, process, architecture, strategy]
+        description: "What kind of thing was audited"
+      
+      audit_criteria:
+        type: object
+        required: true
+        description: "What was checked against"
+        fields:
+          checklist_reference:
+            type: string
+            required: false
+            description: "External checklist/standard used"
+          criteria_list:
+            type: list[string]
+            description: "Specific criteria evaluated"
+          coverage_scope:
+            type: string
+            description: "What this audit did/didn't cover"
+      
+      gaps:
+        type: list[object]
+        required: true
+        description: "Identified gaps"
+        fields:
+          gap_id:
+            type: string
+          category:
+            type: enum
+            options: [missing, incomplete, inconsistent, ambiguous, incorrect, outdated]
+          severity:
+            type: enum
+            options: [critical, high, medium, low]
+          location:
+            type: string
+            description: "Where in the source this gap exists"
+          description:
+            type: string
+          evidence:
+            type: string
+            description: "What indicates this is a gap"
+          impact:
+            type: string
+            description: "Consequence if not addressed"
+          remediation:
+            type: object
+            fields:
+              recommendation:
+                type: string
+              effort:
+                type: enum
+                options: [trivial, small, medium, large]
+              priority:
+                type: enum
+                options: [immediate, short_term, long_term, optional]
+      
+      summary:
+        type: object
+        required: true
+        fields:
+          total_gaps:
+            type: integer
+          by_severity:
+            type: object
+            description: "severity -> count"
+          by_category:
+            type: object
+            description: "category -> count"
+          overall_assessment:
+            type: enum
+            options: [critical_issues, significant_gaps, minor_issues, acceptable, excellent]
+          blocking_issues:
+            type: list[string]
+            description: "gap_ids that must be fixed before proceeding"
+    
+    validation_rules:
+      - rule: "has_summary"
+        condition: "summary exists and total_gaps == gaps.length"
+        severity: error
+        message: "Summary must match gap list"
+      
+      - rule: "gaps_have_severity"
+        condition: "every gap has severity assigned"
+        severity: error
+        message: "All gaps must be severity-classified"
+      
+      - rule: "critical_gaps_have_remediation"
+        condition: "every gap with severity=critical has remediation"
+        severity: error
+        message: "Critical gaps must include remediation"
+    
+    compatibility:
+      produced_by:
+        - skill_types: [AUDIT]
+          examples: ["specification-auditor", "design-system-auditor", "consistency-auditor"]
+      
+      consumed_by:
+        - skill_types: [GEN]
+          purpose: "Generate remediation plan"
+        - skill_types: [VALID]
+          purpose: "Validate gap assessment"
+        - destination: "human_review"
+          description: "For prioritization decisions"
+
+  # ============================================================================
+  # CONTRACT 8: RISK-ASSESSMENT
+  # ============================================================================
+
+  RISK-ASSESSMENT:
+    id: CONTRACT-08
+    name: "Risk Assessment"
+    category: output
+    
+    description: |
+      Structured analysis of risks associated with a decision, solution, or
+      strategy. Primary output of VALID archetype skills. Includes probability,
+      impact, and mitigation strategies.
+    
+    schema:
+      subject_reference:
+        type: string
+        required: true
+        description: "artifact_id of what was risk-assessed"
+      
+      subject_type:
+        type: enum
+        required: true
+        options: [solution, strategy, decision, process, architecture]
+      
+      assessment_method:
+        type: object
+        required: true
+        fields:
+          technique:
+            type: enum
+            options: [pre_mortem, fmea, threat_modeling, scenario_analysis, red_team]
+          assumptions_surfaced:
+            type: list[string]
+            description: "Assumptions identified during assessment"
+          time_horizon:
+            type: string
+            description: "How far ahead risks were considered"
+      
+      risks:
+        type: list[object]
+        required: true
+        description: "Identified risks"
+        fields:
+          risk_id:
+            type: string
+          category:
+            type: enum
+            options: [technical, market, operational, financial, regulatory, strategic, reputational]
+          description:
+            type: string
+          trigger:
+            type: string
+            description: "What would cause this risk to materialize"
+          probability:
+            type: enum
+            options: [very_low, low, medium, high, very_high]
+          impact:
+            type: enum
+            options: [negligible, minor, moderate, major, catastrophic]
+          risk_score:
+            type: number
+            description: "Combined probability × impact score"
+          detection_difficulty:
+            type: enum
+            options: [easy, moderate, difficult, very_difficult]
+            required: false
+          mitigation:
+            type: object
+            fields:
+              strategy:
+                type: enum
+                options: [avoid, transfer, mitigate, accept]
+              actions:
+                type: list[string]
+              residual_risk:
+                type: enum
+                options: [eliminated, reduced, unchanged]
+              owner:
+                type: string
+                required: false
+      
+      failure_scenarios:
+        type: list[object]
+        required: false
+        description: "Detailed failure scenarios (from pre-mortem)"
+        fields:
+          scenario_id:
+            type: string
+          narrative:
+            type: string
+            description: "Story of how failure unfolds"
+          contributing_risks:
+            type: list[string]
+            description: "risk_ids that contribute to this scenario"
+          likelihood:
+            type: number
+            range: [0, 1]
+          early_warning_signs:
+            type: list[string]
+      
+      summary:
+        type: object
+        required: true
+        fields:
+          total_risks:
+            type: integer
+          risk_profile:
+            type: enum
+            options: [very_high, high, moderate, low, very_low]
+          top_risks:
+            type: list[string]
+            description: "Top 3-5 risk_ids by risk_score"
+          go_no_go_assessment:
+            type: enum
+            options: [proceed, proceed_with_caution, significant_concerns, do_not_proceed]
+          key_assumptions:
+            type: list[string]
+            description: "Assumptions that if wrong, change the assessment"
+    
+    validation_rules:
+      - rule: "risks_scored"
+        condition: "every risk has probability and impact"
+        severity: error
+        message: "All risks must be probability/impact assessed"
+      
+      - rule: "high_risks_mitigated"
+        condition: "every risk with risk_score > threshold has mitigation"
+        severity: error
+        message: "High-scoring risks must have mitigation plans"
+      
+      - rule: "has_go_no_go"
+        condition: "summary.go_no_go_assessment exists"
+        severity: error
+        message: "Assessment must conclude with go/no-go recommendation"
+    
+    compatibility:
+      produced_by:
+        - skill_types: [VALID]
+          examples: ["assumption-validator", "pre-mortem-analyzer", "adversarial-qa"]
+      
+      consumed_by:
+        - skill_types: [EVAL]
+          purpose: "Factor risk into evaluation"
+        - skill_types: [GEN]
+          purpose: "Generate risk mitigation plan"
+        - contract: "RANKED-SOLUTION-LIST"
+          purpose: "Adjust rankings based on risk"
+
+  # ============================================================================
+  # CONTRACT 9: EXPERT-OPINION
+  # ============================================================================
+
+  EXPERT-OPINION:
+    id: CONTRACT-09
+    name: "Expert Opinion"
+    category: primitive
+    
+    description: |
+      Structured capture of a single expert perspective. Atomic unit within
+      MoE panel deliberation. Includes the expert's lens, observations,
+      concerns, and recommendation.
+    
+    schema:
+      expert_id:
+        type: string
+        required: true
+        description: "Unique identifier for this expert instance"
+      
+      expert_profile:
+        type: object
+        required: true
+        description: "Who this expert represents"
+        fields:
+          name:
+            type: string
+            description: "Expert persona name"
+          role:
+            type: string
+            description: "Professional role (e.g., 'Security Architect')"
+          lens:
+            type: string
+            description: "Primary perspective/framework they apply"
+          domain:
+            type: string
+            description: "Area of expertise"
+          jurisdiction:
+            type: object
+            description: "What they should/shouldn't opine on"
+            fields:
+              in_scope:
+                type: list[string]
+              out_of_scope:
+                type: list[string]
+      
+      subject_reference:
+        type: string
+        required: true
+        description: "artifact_id of what was evaluated"
+      
+      analysis:
+        type: object
+        required: true
+        fields:
+          key_observations:
+            type: list[string]
+            min_length: 1
+            description: "Main findings from this expert's perspective"
+          concerns:
+            type: list[object]
+            description: "Issues identified"
+            fields:
+              concern:
+                type: string
+              severity:
+                type: enum
+                options: [critical, high, medium, low]
+              in_jurisdiction:
+                type: boolean
+          opportunities:
+            type: list[string]
+            required: false
+            description: "Positive aspects or opportunities identified"
+          blind_spots:
+            type: list[string]
+            required: false
+            description: "What this expert's lens might miss"
+      
+      recommendation:
+        type: object
+        required: true
+        fields:
+          position:
+            type: enum
+            options: [strongly_support, support, neutral, oppose, strongly_oppose]
+          confidence:
+            type: number
+            range: [0, 1]
+          rationale:
+            type: string
+          conditions:
+            type: list[string]
+            required: false
+            description: "What would change this recommendation"
+      
+      conflicts:
+        type: list[string]
+        required: false
+        description: "expert_ids this opinion conflicts with"
+    
+    validation_rules:
+      - rule: "has_observations"
+        condition: "analysis.key_observations.length >= 1"
+        severity: error
+        message: "Expert must provide at least one observation"
+      
+      - rule: "concerns_in_jurisdiction"
+        condition: "concerns are within expert's jurisdiction OR flagged as out_of_scope"
+        severity: warning
+        message: "Expert should stay in their jurisdiction"
+      
+      - rule: "has_position"
+        condition: "recommendation.position exists"
+        severity: error
+        message: "Expert must state a position"
+    
+    compatibility:
+      produced_by:
+        - skill_types: [EVAL]
+          examples: ["moe-panel", "expert-panel-deliberation"]
+      
+      consumed_by:
+        - aggregation_into: "EVALUATION-MATRIX"
+          purpose: "Expert opinions aggregated into multi-perspective assessment"
+        - skill_types: [SYNTH]
+          purpose: "Synthesize multiple expert opinions"
+
+  # ============================================================================
+  # CONTRACT 10: COMPARISON-PAIR
+  # ============================================================================
+
+  COMPARISON-PAIR:
+    id: CONTRACT-10
+    name: "Comparison Pair"
+    category: primitive
+    
+    description: |
+      A single pairwise comparison between two solutions/options. Atomic unit
+      in tournament-style evaluation. Records the comparison result with
+      rationale.
+    
+    schema:
+      comparison_id:
+        type: string
+        required: true
+      
+      tournament_reference:
+        type: string
+        required: false
+        description: "If part of a larger tournament, the tournament artifact_id"
+      
+      item_a:
+        type: object
+        required: true
+        fields:
+          solution_id:
+            type: string
+          name:
+            type: string
+          position:
+            type: enum
+            options: [first, second]
+            description: "Presentation order (for bias detection)"
+      
+      item_b:
+        type: object
+        required: true
+        fields:
+          solution_id:
+            type: string
+          name:
+            type: string
+          position:
+            type: enum
+            options: [first, second]
+      
+      comparison_criteria:
+        type: string
+        required: true
+        description: "What dimension the comparison was made on"
+      
+      result:
+        type: object
+        required: true
+        fields:
+          winner:
+            type: enum
+            options: [item_a, item_b, tie]
+          margin:
+            type: enum
+            options: [decisive, clear, slight, negligible]
+          confidence:
+            type: number
+            range: [0, 1]
+          rationale:
+            type: string
+            description: "Why the winner was chosen"
+      
+      bias_check:
+        type: object
+        required: false
+        description: "Position bias verification"
+        fields:
+          position_swapped_result:
+            type: enum
+            options: [same_winner, different_winner, not_tested]
+          position_bias_detected:
+            type: boolean
+      
+      distinguishing_factors:
+        type: list[object]
+        required: false
+        description: "What differentiated the items"
+        fields:
+          factor:
+            type: string
+          favors:
+            type: enum
+            options: [item_a, item_b, neither]
+          weight:
+            type: enum
+            options: [decisive, significant, minor]
+    
+    validation_rules:
+      - rule: "different_items"
+        condition: "item_a.solution_id != item_b.solution_id"
+        severity: error
+        message: "Cannot compare item to itself"
+      
+      - rule: "has_result"
+        condition: "result.winner exists"
+        severity: error
+        message: "Comparison must have a result"
+      
+      - rule: "has_rationale"
+        condition: "result.rationale.length > 10"
+        severity: warning
+        message: "Comparison should include rationale"
+      
+      - rule: "position_swap_for_close_calls"
+        condition: "IF result.margin in [slight, negligible] THEN bias_check.position_swapped_result exists"
+        severity: warning
+        message: "Close comparisons should verify with position swap"
+    
+    compatibility:
+      produced_by:
+        - skill_types: [EVAL]
+          examples: ["tournament-eval", "pairwise-comparator"]
+      
+      consumed_by:
+        - aggregation_into: "RANKED-SOLUTION-LIST"
+          via: "bradley_terry OR elo_aggregation"
+        - skill_types: [AUDIT]
+          purpose: "Verify tournament consistency"
+
+# ============================================================================
+# CONTRACT COMPATIBILITY MATRIX
+# ============================================================================
+
+compatibility_matrix:
+  description: |
+    Quick reference for which contracts can flow between which archetypes.
+    Use this to validate skill chain designs.
+  
+  archetype_inputs:
+    EVAL:
+      primary: [PROBLEM-STATEMENT, SOLUTION-CANDIDATES]
+      secondary: [SOLUTION-TAXONOMY, EXPERT-OPINION, RISK-ASSESSMENT]
+    AUDIT:
+      primary: [PROBLEM-STATEMENT, SOLUTION-CANDIDATES, EVALUATION-MATRIX]
+      secondary: [SOLUTION-TAXONOMY, RANKED-SOLUTION-LIST]
+    SYNTH:
+      primary: [PROBLEM-STATEMENT]
+      secondary: [EXPERT-OPINION, GAP-INVENTORY, RISK-ASSESSMENT]
+    VALID:
+      primary: [RANKED-SOLUTION-LIST, SOLUTION-CANDIDATE]
+      secondary: [EVALUATION-MATRIX, RISK-ASSESSMENT]
+    XFORM:
+      primary: [unstructured_input]
+      secondary: [PROBLEM-STATEMENT]
+    ELICIT:
+      primary: [conversation_context]
+      secondary: [PROBLEM-STATEMENT, GAP-INVENTORY]
+    GEN:
+      primary: [PROBLEM-STATEMENT, GAP-INVENTORY, RANKED-SOLUTION-LIST]
+      secondary: [EVALUATION-MATRIX, RISK-ASSESSMENT]
+    ORCH:
+      primary: [any_contract]
+      secondary: [skill_metadata]
+  
+  archetype_outputs:
+    EVAL: [EVALUATION-MATRIX, RANKED-SOLUTION-LIST, EXPERT-OPINION, COMPARISON-PAIR]
+    AUDIT: [GAP-INVENTORY]
+    SYNTH: [SOLUTION-CANDIDATES, SOLUTION-TAXONOMY]
+    VALID: [RISK-ASSESSMENT]
+    XFORM: [PROBLEM-STATEMENT, SOLUTION-CANDIDATE]
+    ELICIT: [PROBLEM-STATEMENT, structured_requirements]
+    GEN: [document_artifact]
+    ORCH: [prompt, skill_chain]
+
+# ============================================================================
+# VALIDATION UTILITIES
+# ============================================================================
+
+validation_utilities:
+  
+  validate_artifact:
+    description: |
+      Check an artifact against its contract.
+      Returns: {valid: boolean, errors: [], warnings: []}
+    
+    steps:
+      - "Identify contract_type from artifact"
+      - "Load contract schema"
+      - "Check required fields present"
+      - "Validate field types"
+      - "Run validation_rules"
+      - "Return validation result"
+  
+  validate_handoff:
+    description: |
+      Check if artifact can flow from producer to consumer skill.
+      Returns: {compatible: boolean, warnings: []}
+    
+    steps:
+      - "Identify producer archetype"
+      - "Identify consumer archetype"
+      - "Check contract in producer.outputs"
+      - "Check contract in consumer.inputs (primary or secondary)"
+      - "Return compatibility result"
+
+# ============================================================================
+# VERSION HISTORY
+# ============================================================================
+
+version_history:
+  - version: "1.0"
+    date: "2026-01-31"
+    changes:
+      - "Initial release with 10 core contracts"
+      - "Common metadata schema"
+      - "Compatibility matrix for archetype routing"
+      - "Validation utilities"

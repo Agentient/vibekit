@@ -1,0 +1,1258 @@
+# ============================================================================
+# SCORING RUBRICS LIBRARY
+# ============================================================================
+# Version: 1.0
+# Purpose: Pluggable scoring algorithms for skill evaluation and ranking
+#
+# This library enables:
+#   1. Consistent scoring across skills using the same algorithm
+#   2. Algorithm selection based on evaluation context
+#   3. Parameter configuration for domain-specific tuning
+#   4. Validation of scoring outputs
+#
+# Design principles:
+#   - Mathematical rigor: Each rubric has formal basis
+#   - Pluggable: Skills reference rubrics by ID
+#   - Configurable: Domain-specific parameter presets
+#   - Validated: Input/output contracts enforced
+# ============================================================================
+
+version: "1.0"
+last_updated: "2026-01-31"
+
+# ============================================================================
+# RUBRIC SELECTION GUIDE
+# ============================================================================
+
+selection_guide:
+  description: |
+    Quick reference for choosing the right scoring rubric based on
+    evaluation context and data characteristics.
+  
+  decision_tree:
+    - question: "Is evaluation subjective or objective?"
+      subjective:
+        - question: "Do you have pairwise comparison data?"
+          yes: "Use BRADLEY-TERRY or ELO"
+          no:
+            - question: "Are you prioritizing product features?"
+              yes: "Use RICE"
+              no: "Use WEIGHTED-SUM with appropriate criteria"
+      objective:
+        - question: "Is there a correct answer?"
+          yes: "Use ACCURACY-SCORING"
+          no: "Use WEIGHTED-SUM"
+    
+    - question: "How many items to rank?"
+      few_3_to_5: "Round-robin tournament → BRADLEY-TERRY"
+      moderate_6_to_15: "Swiss tournament → BRADLEY-TERRY or ELO"
+      many_15_plus: "Swiss with adaptive rounds → ELO (faster convergence)"
+    
+    - question: "Do you need confidence intervals?"
+      yes: "BRADLEY-TERRY (provides CI via Fisher information)"
+      no: "ELO is simpler and sufficient"
+  
+  rubric_comparison:
+    | Rubric | Best For | Produces | Requires | Complexity |
+    |--------|----------|----------|----------|------------|
+    | BRADLEY-TERRY | Subjective pairwise ranking | Ratings + CI | COMPARISON-PAIR | High |
+    | ELO | Fast iterative ranking | Ratings | COMPARISON-PAIR | Medium |
+    | RICE | Product prioritization | Priority scores | Feature data | Low |
+    | WEIGHTED-SUM | Multi-criteria decisions | Weighted scores | EVALUATION-MATRIX | Low |
+    | BORDA-COUNT | Rank aggregation | Aggregate ranks | Multiple rankings | Low |
+    | CONFIDENCE-CALIBRATION | Epistemic scoring | Calibrated confidence | Claims + evidence | Medium |
+    | SEVERITY-SCORING | Gap/risk assessment | Severity levels | GAP-INVENTORY/RISK | Low |
+    | MOS | Quality rating | Mean scores + variance | Absolute ratings | Low |
+
+# ============================================================================
+# RUBRIC 1: BRADLEY-TERRY
+# ============================================================================
+
+rubrics:
+
+  BRADLEY-TERRY:
+    id: RUBRIC-01
+    name: "Bradley-Terry Model"
+    category: pairwise_aggregation
+    
+    description: |
+      Probabilistic model that converts pairwise comparison outcomes into
+      interval-scale ratings with confidence intervals. The gold standard
+      for subjective evaluation when ground truth doesn't exist.
+      
+      Mathematical basis: P(i beats j) = πᵢ / (πᵢ + πⱼ)
+      Log-linear form: log(πᵢ) = βᵢ, solved via maximum likelihood estimation
+    
+    when_to_use:
+      ideal:
+        - "Subjective quality comparisons (tone, persuasiveness, coherence)"
+        - "No objective ground truth exists"
+        - "Need confidence intervals on rankings"
+        - "Want to identify statistically indistinguishable items"
+      avoid:
+        - "Objective correctness with verifiable answers"
+        - "Time-critical evaluation (slower than ELO)"
+        - "Very large item sets (>50 items)"
+    
+    mathematical_foundation:
+      model: |
+        P(i > j) = πᵢ / (πᵢ + πⱼ)
+        
+        Where πᵢ is the "strength" parameter for item i.
+        
+        Log-linear parameterization:
+        log(πᵢ) = βᵢ
+        
+        Estimation via maximum likelihood:
+        L(β) = Π P(winner|β)
+        
+        Confidence intervals via Fisher information matrix:
+        Var(β̂ᵢ) ≈ [I(β̂)]⁻¹ᵢᵢ
+      
+      properties:
+        - "Produces interval-scale ratings (not just ordinal)"
+        - "Handles ties via extension (Davidson model)"
+        - "Confidence intervals reveal distinguishability"
+        - "Invariant to number of comparisons per pair (within limits)"
+    
+    parameters:
+      minimum_comparisons_per_pair:
+        type: integer
+        default: 3
+        min: 1
+        max: 10
+        description: |
+          Research-backed minimum: 3 comparisons per pair for reliability.
+          For n items: need n(n-1)/2 × 3 total comparisons minimum.
+          Source: Chatbot Arena / LMSYS research
+      
+      confidence_level:
+        type: float
+        default: 0.95
+        options: [0.90, 0.95, 0.99]
+        description: "Confidence level for interval estimation"
+      
+      output_scale:
+        type: enum
+        default: "elo_style"
+        options:
+          raw_log_odds:
+            description: "Mathematical output (can be negative)"
+          elo_style:
+            description: "Centered at 1500, SD ~200"
+            transform: "1500 + 173.7 × βᵢ"
+          normalized_0_100:
+            description: "Scaled to 0-100 range"
+            transform: "100 × (βᵢ - min) / (max - min)"
+      
+      tie_handling:
+        type: enum
+        default: "davidson_extension"
+        options:
+          davidson_extension:
+            description: "Explicit tie probability parameter"
+          half_win:
+            description: "Ties count as 0.5 win for each"
+          exclude:
+            description: "Exclude ties from estimation"
+      
+      regularization:
+        type: float
+        default: 0.0
+        min: 0.0
+        max: 1.0
+        description: |
+          Ridge regularization to prevent extreme estimates for items
+          with few comparisons. 0 = no regularization.
+    
+    input_requirements:
+      primary_contract: "COMPARISON-PAIR"
+      minimum_data:
+        - "At least 2 items"
+        - "Each item compared at least once"
+        - "Recommended: 3× pairs for reliability"
+      data_format: |
+        List of comparison outcomes:
+        [
+          {item_a: "id1", item_b: "id2", winner: "item_a"},
+          {item_a: "id1", item_b: "id3", winner: "item_b"},
+          ...
+        ]
+    
+    output_format:
+      ratings:
+        type: list[object]
+        description: "Item ratings with confidence"
+        fields:
+          item_id: { type: string }
+          rating: { type: number }
+          confidence_interval:
+            lower: { type: number }
+            upper: { type: number }
+          comparisons_participated: { type: integer }
+      
+      distinguishability_matrix:
+        type: object
+        description: "Which items are statistically distinguishable"
+        format: |
+          {
+            "item_1": {
+              "item_2": true,   // CI don't overlap
+              "item_3": false   // CI overlap - can't distinguish
+            }
+          }
+      
+      model_fit:
+        type: object
+        fields:
+          log_likelihood: { type: number }
+          comparisons_used: { type: integer }
+          items_rated: { type: integer }
+          convergence: { type: boolean }
+    
+    validation_rules:
+      - rule: "sufficient_comparisons"
+        condition: "each item has >= minimum_comparisons_per_pair"
+        severity: warning
+        message: "Some items have fewer comparisons than recommended"
+      
+      - rule: "connected_graph"
+        condition: "comparison graph is connected (every item reachable)"
+        severity: error
+        message: "Cannot rate items with no comparison path"
+      
+      - rule: "model_converged"
+        condition: "MLE optimization converged"
+        severity: error
+        message: "Model failed to converge - check data"
+    
+    implementation_notes: |
+      1. Use scipy.optimize or custom Newton-Raphson for MLE
+      2. Handle disconnected components separately
+      3. Set one item as reference (β₀ = 0) for identifiability
+      4. For large n, use stochastic gradient descent variant
+    
+    domain_presets:
+      product:
+        minimum_comparisons_per_pair: 3
+        output_scale: "normalized_0_100"
+        tie_handling: "half_win"
+      
+      research:
+        minimum_comparisons_per_pair: 5
+        output_scale: "elo_style"
+        confidence_level: 0.99
+        tie_handling: "davidson_extension"
+      
+      quick_evaluation:
+        minimum_comparisons_per_pair: 1
+        output_scale: "normalized_0_100"
+        regularization: 0.1
+
+  # ============================================================================
+  # RUBRIC 2: ELO
+  # ============================================================================
+
+  ELO:
+    id: RUBRIC-02
+    name: "ELO Rating System"
+    category: pairwise_aggregation
+    
+    description: |
+      Iterative rating system originally designed for chess. Updates ratings
+      after each comparison based on expected vs actual outcome. Faster
+      convergence than Bradley-Terry for online/streaming comparisons.
+      
+      Key difference from Bradley-Terry: ELO is order-dependent (sensitive
+      to game sequence), while BT assumes fixed underlying win rates.
+    
+    when_to_use:
+      ideal:
+        - "Online/streaming evaluation (results come incrementally)"
+        - "Large number of items where full round-robin is impractical"
+        - "Fast convergence needed over mathematical rigor"
+        - "Familiar, interpretable scale (1500 baseline)"
+      avoid:
+        - "Need confidence intervals (use Bradley-Terry)"
+        - "Order of comparisons is non-random"
+        - "Need to prove items are statistically different"
+    
+    mathematical_foundation:
+      model: |
+        Expected score: Eₐ = 1 / (1 + 10^((Rᵦ - Rₐ)/400))
+        
+        Rating update: R'ₐ = Rₐ + K × (Sₐ - Eₐ)
+        
+        Where:
+        - Rₐ, Rᵦ = current ratings
+        - Sₐ = actual score (1 for win, 0.5 for tie, 0 for loss)
+        - K = update factor (higher = more volatile)
+      
+      properties:
+        - "Iterative: can update after each comparison"
+        - "Converges to approximate Bradley-Terry ratings"
+        - "Order-sensitive: different sequences → different ratings"
+        - "No built-in confidence intervals"
+    
+    parameters:
+      initial_rating:
+        type: integer
+        default: 1500
+        min: 1000
+        max: 2000
+        description: "Starting rating for new items"
+      
+      k_factor:
+        type: number
+        default: 32
+        description: |
+          Update magnitude. Higher = faster adaptation, more volatile.
+          Chess uses: 40 (new), 20 (established), 10 (masters)
+        presets:
+          high_volatility: 64
+          standard: 32
+          stable: 16
+          very_stable: 8
+      
+      k_factor_decay:
+        type: object
+        default: { enabled: false }
+        description: "Reduce K as item accumulates comparisons"
+        fields:
+          enabled: { type: boolean }
+          decay_rate: { type: float, default: 0.95 }
+          minimum_k: { type: float, default: 8 }
+      
+      tie_handling:
+        type: enum
+        default: "draw_score"
+        options:
+          draw_score:
+            description: "Both get 0.5 score"
+          no_update:
+            description: "Skip update on ties"
+          slight_favorite:
+            description: "Higher-rated gets 0.55, lower gets 0.45"
+    
+    input_requirements:
+      primary_contract: "COMPARISON-PAIR"
+      minimum_data:
+        - "At least 2 items"
+        - "Comparison sequence (order matters)"
+      data_format: |
+        Ordered list of comparisons:
+        [
+          {item_a: "id1", item_b: "id2", winner: "item_a", timestamp: "..."},
+          ...
+        ]
+    
+    output_format:
+      ratings:
+        type: list[object]
+        fields:
+          item_id: { type: string }
+          rating: { type: integer }
+          games_played: { type: integer }
+          win_rate: { type: number }
+          rating_history:
+            type: list[object]
+            description: "Rating after each comparison"
+            fields:
+              after_game: { type: integer }
+              rating: { type: integer }
+      
+      rating_distribution:
+        type: object
+        fields:
+          mean: { type: number }
+          std_dev: { type: number }
+          min: { type: number }
+          max: { type: number }
+    
+    validation_rules:
+      - rule: "ratings_bounded"
+        condition: "all ratings between 100 and 3000"
+        severity: warning
+        message: "Extreme ratings suggest data issues"
+      
+      - rule: "sufficient_games"
+        condition: "each item has >= 5 comparisons for stable rating"
+        severity: warning
+        message: "Some items have unstable ratings due to few games"
+    
+    domain_presets:
+      tournament:
+        k_factor: 32
+        initial_rating: 1500
+        tie_handling: "draw_score"
+      
+      rapid_evaluation:
+        k_factor: 64
+        initial_rating: 1500
+        k_factor_decay: { enabled: true, decay_rate: 0.9, minimum_k: 16 }
+      
+      stable_ranking:
+        k_factor: 16
+        initial_rating: 1500
+        tie_handling: "no_update"
+
+  # ============================================================================
+  # RUBRIC 3: RICE
+  # ============================================================================
+
+  RICE:
+    id: RUBRIC-03
+    name: "RICE Prioritization Framework"
+    category: multi_criteria
+    
+    description: |
+      Product prioritization framework: Reach × Impact × Confidence ÷ Effort.
+      Designed to compare features/initiatives with a standardized score.
+      
+      Origin: Intercom product team, widely adopted in product management.
+    
+    when_to_use:
+      ideal:
+        - "Product feature prioritization"
+        - "Initiative comparison with limited data"
+        - "Need quick, defensible priority scores"
+        - "Comparing items with very different characteristics"
+      avoid:
+        - "Comparing highly similar items (insufficient discrimination)"
+        - "Need statistical confidence in rankings"
+        - "Strategic decisions requiring deeper analysis"
+    
+    mathematical_foundation:
+      formula: |
+        RICE Score = (Reach × Impact × Confidence) / Effort
+        
+        Where:
+        - Reach: # of users/customers affected per time period
+        - Impact: Degree of impact per user (0.25, 0.5, 1, 2, 3 scale)
+        - Confidence: Certainty in estimates (0-100%)
+        - Effort: Person-months (or other effort unit)
+      
+      impact_scale:
+        0.25: "Minimal impact"
+        0.5: "Low impact"
+        1: "Medium impact"
+        2: "High impact"
+        3: "Massive impact"
+    
+    parameters:
+      reach_unit:
+        type: string
+        default: "users_per_quarter"
+        description: "Unit of measurement for reach"
+        examples: ["users_per_month", "transactions_per_day", "customers_per_quarter"]
+      
+      effort_unit:
+        type: string
+        default: "person_weeks"
+        description: "Unit of measurement for effort"
+        examples: ["person_days", "person_weeks", "person_months", "story_points"]
+      
+      impact_scale:
+        type: enum
+        default: "standard"
+        options:
+          standard:
+            values: [0.25, 0.5, 1, 2, 3]
+            labels: ["minimal", "low", "medium", "high", "massive"]
+          binary:
+            values: [0.5, 2]
+            labels: ["incremental", "transformative"]
+          fine_grained:
+            values: [0.1, 0.25, 0.5, 1, 1.5, 2, 2.5, 3]
+      
+      confidence_floor:
+        type: number
+        default: 0.2
+        min: 0.1
+        max: 0.5
+        description: "Minimum confidence to prevent near-zero scores"
+      
+      normalization:
+        type: enum
+        default: "none"
+        options:
+          none: "Raw RICE scores"
+          log_scale: "Log transform for very different magnitudes"
+          percentile: "Convert to percentile ranking"
+    
+    input_requirements:
+      primary_contract: "SOLUTION-CANDIDATES"
+      required_fields_per_item:
+        - reach: "Number (users, customers, transactions)"
+        - impact: "Number from impact scale"
+        - confidence: "Percentage (0-100)"
+        - effort: "Number (in effort_unit)"
+      
+      optional_fields:
+        - reach_rationale: "Why this reach estimate"
+        - impact_rationale: "Why this impact level"
+        - effort_breakdown: "Component efforts"
+    
+    output_format:
+      scores:
+        type: list[object]
+        fields:
+          item_id: { type: string }
+          name: { type: string }
+          rice_score: { type: number }
+          components:
+            reach: { type: number }
+            impact: { type: number }
+            confidence: { type: number }
+            effort: { type: number }
+          rank: { type: integer }
+      
+      summary:
+        type: object
+        fields:
+          score_range: { min: number, max: number }
+          top_pick: { type: string }
+          clusters:
+            type: list[object]
+            description: "Items grouped by score tier"
+            fields:
+              tier: { type: string, options: ["high", "medium", "low"] }
+              items: { type: list[string] }
+      
+      sensitivity:
+        type: object
+        description: "What changes would flip the top pick"
+        fields:
+          confidence_sensitivity: { type: string }
+          effort_sensitivity: { type: string }
+    
+    validation_rules:
+      - rule: "reach_positive"
+        condition: "reach > 0 for all items"
+        severity: error
+        message: "Reach must be positive"
+      
+      - rule: "confidence_bounded"
+        condition: "0 < confidence <= 1 for all items"
+        severity: error
+        message: "Confidence must be between 0 and 1"
+      
+      - rule: "effort_positive"
+        condition: "effort > 0 for all items"
+        severity: error
+        message: "Effort must be positive (prevents division by zero)"
+      
+      - rule: "impact_valid"
+        condition: "impact in configured scale"
+        severity: error
+        message: "Impact must use configured scale values"
+    
+    domain_presets:
+      product_features:
+        reach_unit: "users_per_quarter"
+        effort_unit: "person_weeks"
+        impact_scale: "standard"
+        confidence_floor: 0.2
+      
+      strategic_initiatives:
+        reach_unit: "customers_per_year"
+        effort_unit: "person_months"
+        impact_scale: "standard"
+        confidence_floor: 0.3
+      
+      quick_wins:
+        reach_unit: "users_per_month"
+        effort_unit: "person_days"
+        impact_scale: "binary"
+        normalization: "percentile"
+
+  # ============================================================================
+  # RUBRIC 4: WEIGHTED-SUM
+  # ============================================================================
+
+  WEIGHTED-SUM:
+    id: RUBRIC-04
+    name: "Weighted Sum / Multi-Criteria Decision Matrix"
+    category: multi_criteria
+    
+    description: |
+      Classic multi-criteria decision analysis. Score each option against
+      weighted criteria, sum weighted scores for total. Simple, transparent,
+      widely understood.
+    
+    when_to_use:
+      ideal:
+        - "Multiple explicit criteria matter"
+        - "Stakeholder buy-in requires transparency"
+        - "Criteria weights can be agreed upon"
+        - "Need Pareto analysis (non-dominated options)"
+      avoid:
+        - "Criteria are highly correlated (double-counting)"
+        - "Weights are highly contested"
+        - "Subjective comparisons better than absolute scores"
+    
+    mathematical_foundation:
+      formula: |
+        Total Score = Σ (wᵢ × sᵢ)
+        
+        Where:
+        - wᵢ = weight of criterion i (Σwᵢ = 1)
+        - sᵢ = score on criterion i (normalized to common scale)
+      
+      normalization_methods:
+        min_max: "(x - min) / (max - min)"
+        z_score: "(x - μ) / σ"
+        percentage: "x / max × 100"
+    
+    parameters:
+      score_scale:
+        type: object
+        default: { min: 1, max: 5 }
+        description: "Scale for criterion scores"
+        presets:
+          likert_5: { min: 1, max: 5 }
+          likert_7: { min: 1, max: 7 }
+          percentage: { min: 0, max: 100 }
+          binary: { min: 0, max: 1 }
+      
+      weight_constraint:
+        type: enum
+        default: "sum_to_one"
+        options:
+          sum_to_one: "Weights must sum to 1.0"
+          unconstrained: "Weights can be any positive value"
+          ranked_importance: "Derive weights from importance ranking"
+      
+      normalization:
+        type: enum
+        default: "none"
+        options:
+          none: "Use raw scores"
+          min_max: "Normalize to 0-1 per criterion"
+          z_score: "Standardize per criterion"
+      
+      pareto_analysis:
+        type: boolean
+        default: true
+        description: "Identify Pareto-optimal (non-dominated) options"
+    
+    input_requirements:
+      primary_contract: "EVALUATION-MATRIX"
+      required_data:
+        criteria:
+          type: list[object]
+          fields:
+            criterion_id: { type: string }
+            name: { type: string }
+            weight: { type: number }
+            direction: { type: enum, options: ["higher_better", "lower_better"] }
+        
+        scores:
+          type: list[object]
+          description: "Score per option per criterion"
+          fields:
+            option_id: { type: string }
+            criterion_id: { type: string }
+            score: { type: number }
+            rationale: { type: string, required: false }
+    
+    output_format:
+      scores:
+        type: list[object]
+        fields:
+          option_id: { type: string }
+          total_score: { type: number }
+          criterion_scores:
+            type: list[object]
+            fields:
+              criterion_id: { type: string }
+              raw_score: { type: number }
+              weighted_score: { type: number }
+          rank: { type: integer }
+          is_pareto_optimal: { type: boolean }
+      
+      pareto_set:
+        type: list[string]
+        description: "option_ids that are Pareto-optimal"
+      
+      sensitivity_analysis:
+        type: object
+        fields:
+          weight_sensitivity:
+            type: list[object]
+            description: "How much weight change flips the winner"
+            fields:
+              criterion_id: { type: string }
+              threshold_change: { type: number }
+          
+          dominated_analysis:
+            type: object
+            description: "For each non-Pareto option, what dominates it"
+    
+    validation_rules:
+      - rule: "weights_sum"
+        condition: "IF weight_constraint=sum_to_one THEN abs(sum(weights) - 1.0) < 0.01"
+        severity: error
+        message: "Weights must sum to 1.0"
+      
+      - rule: "all_criteria_scored"
+        condition: "every option has score for every criterion"
+        severity: error
+        message: "Missing scores in matrix"
+      
+      - rule: "scores_in_range"
+        condition: "all scores within configured scale"
+        severity: error
+        message: "Scores outside valid range"
+    
+    domain_presets:
+      architecture:
+        criteria_template:
+          - { name: "Scalability", weight: 0.20, direction: "higher_better" }
+          - { name: "Maintainability", weight: 0.20, direction: "higher_better" }
+          - { name: "Security", weight: 0.20, direction: "higher_better" }
+          - { name: "Cost", weight: 0.15, direction: "lower_better" }
+          - { name: "Time to Implement", weight: 0.15, direction: "lower_better" }
+          - { name: "Reversibility", weight: 0.10, direction: "higher_better" }
+        score_scale: { min: 1, max: 5 }
+      
+      product:
+        criteria_template:
+          - { name: "User Value", weight: 0.25, direction: "higher_better" }
+          - { name: "Business Value", weight: 0.20, direction: "higher_better" }
+          - { name: "Feasibility", weight: 0.20, direction: "higher_better" }
+          - { name: "Speed to Market", weight: 0.15, direction: "higher_better" }
+          - { name: "Strategic Alignment", weight: 0.10, direction: "higher_better" }
+          - { name: "Risk", weight: 0.10, direction: "lower_better" }
+        score_scale: { min: 1, max: 5 }
+      
+      strategy:
+        criteria_template:
+          - { name: "Strategic Fit", weight: 0.25, direction: "higher_better" }
+          - { name: "ROI Potential", weight: 0.25, direction: "higher_better" }
+          - { name: "Execution Risk", weight: 0.20, direction: "lower_better" }
+          - { name: "Resource Requirements", weight: 0.15, direction: "lower_better" }
+          - { name: "Time to Value", weight: 0.15, direction: "lower_better" }
+        score_scale: { min: 1, max: 5 }
+
+  # ============================================================================
+  # RUBRIC 5: BORDA-COUNT
+  # ============================================================================
+
+  BORDA-COUNT:
+    id: RUBRIC-05
+    name: "Borda Count / Rank Aggregation"
+    category: rank_aggregation
+    
+    description: |
+      Aggregates multiple rankings into a single consensus ranking. Each ranker
+      assigns points inversely to rank position. Useful when you have multiple
+      evaluators' rankings to combine.
+    
+    when_to_use:
+      ideal:
+        - "Multiple expert rankings to aggregate"
+        - "Rankings, not scores, are available"
+        - "Equal weight for all rankers"
+        - "Want simple, transparent aggregation"
+      avoid:
+        - "Rankers have very different expertise (use weighted)"
+        - "Need to handle incomplete rankings"
+        - "Strategic voting is a concern"
+    
+    mathematical_foundation:
+      formula: |
+        For n candidates, rank r gets (n - r) points.
+        
+        Borda Score(c) = Σᵣ (n - rank_r(c))
+        
+        Where rank_r(c) is candidate c's rank from ranker r.
+      
+      properties:
+        - "Satisfies majority criterion for 2 candidates"
+        - "Violates Condorcet criterion (winner may lose pairwise)"
+        - "Sensitive to irrelevant alternatives"
+    
+    parameters:
+      point_scheme:
+        type: enum
+        default: "standard"
+        options:
+          standard:
+            description: "Rank 1 = n-1 points, rank 2 = n-2, ..., rank n = 0"
+          modified:
+            description: "Rank 1 = n points, rank 2 = n-1, ..., rank n = 1"
+          weighted_position:
+            description: "Custom weights per position"
+      
+      incomplete_ranking_handling:
+        type: enum
+        default: "truncated"
+        options:
+          truncated: "Unranked items get 0 points from that ranker"
+          average: "Unranked items share remaining points equally"
+          exclude: "Exclude ranker if ranking incomplete"
+      
+      tie_handling:
+        type: enum
+        default: "average_points"
+        options:
+          average_points: "Tied items split the points for their positions"
+          all_higher: "All tied items get the higher point value"
+    
+    input_requirements:
+      primary_contract: null  # Custom input
+      required_data:
+        rankings:
+          type: list[object]
+          description: "One ranking per evaluator"
+          fields:
+            ranker_id: { type: string }
+            ranked_items:
+              type: list[string]
+              description: "Item IDs in rank order (best first)"
+            weight: { type: number, default: 1.0, required: false }
+    
+    output_format:
+      scores:
+        type: list[object]
+        fields:
+          item_id: { type: string }
+          borda_score: { type: number }
+          rank: { type: integer }
+          points_by_ranker:
+            type: object
+            description: "ranker_id → points awarded"
+      
+      consensus_metrics:
+        type: object
+        fields:
+          kendall_w:
+            type: number
+            description: "Kendall's W coefficient of concordance (0-1)"
+          agreement_level:
+            type: enum
+            options: ["strong", "moderate", "weak", "none"]
+    
+    validation_rules:
+      - rule: "all_items_ranked"
+        condition: "IF incomplete_ranking_handling != truncated THEN all items ranked"
+        severity: warning
+        message: "Some rankers have incomplete rankings"
+      
+      - rule: "no_duplicate_ranks"
+        condition: "no item appears twice in same ranking"
+        severity: error
+        message: "Duplicate items in ranking"
+
+  # ============================================================================
+  # RUBRIC 6: CONFIDENCE-CALIBRATION
+  # ============================================================================
+
+  CONFIDENCE-CALIBRATION:
+    id: RUBRIC-06
+    name: "Confidence Calibration Protocol"
+    category: epistemic
+    
+    description: |
+      Framework for assigning and calibrating confidence levels to claims,
+      findings, or recommendations. Ensures epistemic honesty and distinguishes
+      between certainty levels.
+    
+    when_to_use:
+      ideal:
+        - "Research findings with varying evidence quality"
+        - "Recommendations that need confidence communication"
+        - "Claims that could be challenged"
+        - "Audit findings with different certainty levels"
+      avoid:
+        - "Binary correct/incorrect evaluations"
+        - "Purely subjective preferences"
+    
+    mathematical_foundation:
+      calibration_curve: |
+        A well-calibrated system has:
+        P(correct | confidence = p) ≈ p
+        
+        For example, if you say 70% confident, you should be right ~70% of the time.
+      
+      metrics:
+        brier_score: "Mean squared error: (1/n) Σ (pᵢ - oᵢ)²"
+        calibration_error: "Mean |p - P(correct|p)| across bins"
+    
+    parameters:
+      confidence_scale:
+        type: enum
+        default: "percentage"
+        options:
+          percentage:
+            range: [0, 100]
+            interpretation: "0% = completely uncertain, 100% = certain"
+          probability:
+            range: [0.0, 1.0]
+            interpretation: "Probability of correctness"
+          qualitative:
+            levels: ["very_low", "low", "medium", "high", "very_high"]
+            mapping: { very_low: 0.1, low: 0.3, medium: 0.5, high: 0.7, very_high: 0.9 }
+      
+      epistemic_categories:
+        type: list[object]
+        default:
+          - label: "VERIFIED"
+            confidence_range: [0.9, 1.0]
+            description: "Confirmed by direct evidence"
+          - label: "LIKELY"
+            confidence_range: [0.7, 0.9]
+            description: "Strong indirect evidence"
+          - label: "POSSIBLE"
+            confidence_range: [0.4, 0.7]
+            description: "Some supporting evidence"
+          - label: "SPECULATIVE"
+            confidence_range: [0.1, 0.4]
+            description: "Limited evidence, mostly inference"
+          - label: "UNKNOWN"
+            confidence_range: [0.0, 0.1]
+            description: "Insufficient basis for judgment"
+      
+      evidence_weighting:
+        type: object
+        default:
+          primary_source: 1.0
+          secondary_source: 0.7
+          expert_opinion: 0.6
+          inference: 0.4
+          assumption: 0.2
+    
+    input_requirements:
+      required_per_claim:
+        - claim: "The statement being assessed"
+        - evidence: "Supporting evidence (list)"
+        - evidence_types: "Type of each evidence piece"
+        - counterevidence: "Any contradicting evidence (optional)"
+    
+    output_format:
+      calibrated_claims:
+        type: list[object]
+        fields:
+          claim_id: { type: string }
+          claim: { type: string }
+          confidence: { type: number }
+          epistemic_label: { type: string }
+          evidence_summary: { type: string }
+          uncertainty_factors:
+            type: list[string]
+            description: "What reduces confidence"
+          would_change_if:
+            type: list[string]
+            description: "What evidence would change assessment"
+    
+    validation_rules:
+      - rule: "confidence_bounded"
+        condition: "0 <= confidence <= 1"
+        severity: error
+      
+      - rule: "high_confidence_has_evidence"
+        condition: "IF confidence > 0.8 THEN evidence.length >= 1"
+        severity: warning
+        message: "High confidence claims should cite evidence"
+
+  # ============================================================================
+  # RUBRIC 7: SEVERITY-SCORING
+  # ============================================================================
+
+  SEVERITY-SCORING:
+    id: RUBRIC-07
+    name: "Severity Classification"
+    category: risk_assessment
+    
+    description: |
+      Framework for classifying severity of gaps, risks, or issues. Produces
+      consistent severity labels with clear definitions and remediation
+      priority guidance.
+    
+    when_to_use:
+      ideal:
+        - "Gap inventories from audits"
+        - "Risk assessments"
+        - "Bug/issue triage"
+        - "Compliance findings"
+      avoid:
+        - "Positive findings (use different framework)"
+        - "Comparative ranking (use Bradley-Terry or RICE)"
+    
+    parameters:
+      severity_levels:
+        type: list[object]
+        default:
+          - level: "CRITICAL"
+            numeric: 4
+            definition: "Blocks primary objective; cannot proceed"
+            response_time: "Immediate"
+            color: "red"
+          - level: "HIGH"
+            numeric: 3
+            definition: "Significant impact; major rework required"
+            response_time: "Within 24-48 hours"
+            color: "orange"
+          - level: "MEDIUM"
+            numeric: 2
+            definition: "Degrades quality; should fix but can proceed"
+            response_time: "Within sprint"
+            color: "yellow"
+          - level: "LOW"
+            numeric: 1
+            definition: "Minor issue; cosmetic; nice-to-have"
+            response_time: "When convenient"
+            color: "green"
+      
+      scoring_dimensions:
+        type: list[object]
+        default:
+          - dimension: "impact"
+            weight: 0.5
+            scale: { low: 1, medium: 2, high: 3, critical: 4 }
+          - dimension: "likelihood"
+            weight: 0.3
+            scale: { rare: 1, possible: 2, likely: 3, certain: 4 }
+          - dimension: "detectability"
+            weight: 0.2
+            scale: { obvious: 1, moderate: 2, difficult: 3, hidden: 4 }
+      
+      aggregation_method:
+        type: enum
+        default: "weighted_sum"
+        options:
+          weighted_sum: "Sum dimension scores with weights"
+          max_dimension: "Take highest dimension score"
+          risk_priority_number: "Multiply all dimensions (FMEA style)"
+    
+    input_requirements:
+      primary_contract: "GAP-INVENTORY or RISK-ASSESSMENT"
+      required_per_item:
+        - item_id: "Identifier"
+        - description: "What the gap/risk is"
+        - dimension_scores: "Score per configured dimension"
+    
+    output_format:
+      classified_items:
+        type: list[object]
+        fields:
+          item_id: { type: string }
+          severity_level: { type: string }
+          severity_numeric: { type: integer }
+          dimension_breakdown:
+            type: object
+            description: "Score per dimension"
+          priority_rank: { type: integer }
+          recommended_response: { type: string }
+      
+      summary:
+        type: object
+        fields:
+          by_severity:
+            type: object
+            description: "Count per severity level"
+          critical_items: { type: list[string] }
+          overall_health:
+            type: enum
+            options: ["critical", "concerning", "acceptable", "good"]
+    
+    validation_rules:
+      - rule: "all_dimensions_scored"
+        condition: "every item has score for every dimension"
+        severity: error
+      
+      - rule: "critical_items_identified"
+        condition: "IF any item is CRITICAL THEN highlighted in summary"
+        severity: error
+
+  # ============================================================================
+  # RUBRIC 8: MOS (Mean Opinion Score)
+  # ============================================================================
+
+  MOS:
+    id: RUBRIC-08
+    name: "Mean Opinion Score"
+    category: absolute_rating
+    
+    description: |
+      Aggregates absolute quality ratings from multiple evaluators. Originally
+      from telecommunications (ITU-T P.800), widely used for subjective quality
+      assessment when pairwise comparison is impractical.
+    
+    when_to_use:
+      ideal:
+        - "Many items to evaluate (pairwise impractical)"
+        - "Multiple evaluators rate same items"
+        - "Standard quality scale appropriate"
+        - "Need variance/reliability metrics"
+      avoid:
+        - "Few items where pairwise is feasible"
+        - "Need to distinguish closely-ranked items"
+        - "Evaluators have very different standards"
+    
+    mathematical_foundation:
+      formula: |
+        MOS = (1/N) Σ rᵢ
+        
+        Where rᵢ is rating from evaluator i, N is number of evaluators.
+        
+        Standard deviation: σ = √[(1/N) Σ (rᵢ - MOS)²]
+        
+        95% CI: MOS ± 1.96 × (σ / √N)
+    
+    parameters:
+      rating_scale:
+        type: object
+        default:
+          min: 1
+          max: 5
+          labels:
+            1: "Bad"
+            2: "Poor"
+            3: "Fair"
+            4: "Good"
+            5: "Excellent"
+      
+      minimum_evaluators:
+        type: integer
+        default: 3
+        min: 2
+        description: "Minimum evaluators for reliable MOS"
+      
+      outlier_handling:
+        type: enum
+        default: "include"
+        options:
+          include: "Use all ratings"
+          trim: "Remove top/bottom 10%"
+          winsorize: "Cap outliers at 2 SD"
+    
+    input_requirements:
+      required_data:
+        ratings:
+          type: list[object]
+          fields:
+            item_id: { type: string }
+            evaluator_id: { type: string }
+            rating: { type: number }
+    
+    output_format:
+      scores:
+        type: list[object]
+        fields:
+          item_id: { type: string }
+          mos: { type: number }
+          std_dev: { type: number }
+          confidence_interval: { lower: number, upper: number }
+          num_evaluators: { type: integer }
+          rating_distribution:
+            type: object
+            description: "Count at each scale point"
+          rank: { type: integer }
+      
+      reliability_metrics:
+        type: object
+        fields:
+          inter_rater_reliability:
+            type: number
+            description: "Krippendorff's alpha or ICC"
+          agreement_level:
+            type: enum
+            options: ["excellent", "good", "moderate", "poor"]
+
+# ============================================================================
+# RUBRIC COMPOSITION RULES
+# ============================================================================
+
+composition_rules:
+  description: |
+    Guidelines for combining multiple rubrics in a single evaluation workflow.
+  
+  valid_combinations:
+    - pattern: "WEIGHTED-SUM → BRADLEY-TERRY"
+      use_case: "Score via matrix, then validate top picks via tournament"
+      workflow: |
+        1. Score all options with WEIGHTED-SUM
+        2. Take top N scoring options
+        3. Run pairwise tournament on top N
+        4. Final ranking from BRADLEY-TERRY
+    
+    - pattern: "BRADLEY-TERRY → CONFIDENCE-CALIBRATION"
+      use_case: "Rank options, then calibrate confidence in ranking"
+      workflow: |
+        1. Run tournament to get rankings
+        2. Assess confidence in distinguishability
+        3. Label rankings with confidence tiers
+    
+    - pattern: "RICE → SEVERITY-SCORING"
+      use_case: "Prioritize features, then assess risk of top picks"
+      workflow: |
+        1. Score features with RICE
+        2. Run risk assessment on high-priority items
+        3. Adjust priority based on risk severity
+  
+  anti_patterns:
+    - pattern: "BRADLEY-TERRY → BRADLEY-TERRY"
+      problem: "Redundant - no new information"
+    
+    - pattern: "Multiple absolute scores → direct average"
+      problem: "Scale differences cause issues"
+      fix: "Normalize before combining"
+
+# ============================================================================
+# INTEGRATION WITH ARTIFACT CONTRACTS
+# ============================================================================
+
+contract_integration:
+  
+  BRADLEY-TERRY:
+    input_contracts: ["COMPARISON-PAIR"]
+    output_contracts: ["RANKED-SOLUTION-LIST"]
+    integration_notes: |
+      - Consumes COMPARISON-PAIR list
+      - Produces RANKED-SOLUTION-LIST with confidence intervals
+      - Adds distinguishability_matrix to output
+  
+  ELO:
+    input_contracts: ["COMPARISON-PAIR"]
+    output_contracts: ["RANKED-SOLUTION-LIST"]
+    integration_notes: |
+      - Consumes ordered COMPARISON-PAIR sequence
+      - Produces RANKED-SOLUTION-LIST without confidence intervals
+      - Includes rating_history for trend analysis
+  
+  RICE:
+    input_contracts: ["SOLUTION-CANDIDATES"]
+    output_contracts: ["RANKED-SOLUTION-LIST"]
+    integration_notes: |
+      - Requires reach/impact/confidence/effort per candidate
+      - Produces RANKED-SOLUTION-LIST with RICE score breakdown
+  
+  WEIGHTED-SUM:
+    input_contracts: ["EVALUATION-MATRIX"]
+    output_contracts: ["RANKED-SOLUTION-LIST"]
+    integration_notes: |
+      - Consumes complete EVALUATION-MATRIX
+      - Produces RANKED-SOLUTION-LIST with Pareto analysis
+  
+  SEVERITY-SCORING:
+    input_contracts: ["GAP-INVENTORY", "RISK-ASSESSMENT"]
+    output_contracts: ["GAP-INVENTORY", "RISK-ASSESSMENT"]
+    integration_notes: |
+      - Enhances existing contract with severity classification
+      - Adds priority_rank and recommended_response
+
+# ============================================================================
+# VERSION HISTORY
+# ============================================================================
+
+version_history:
+  - version: "1.0"
+    date: "2026-01-31"
+    changes:
+      - "Initial release with 8 scoring rubrics"
+      - "Selection guide with decision tree"
+      - "Domain presets for architecture, product, strategy"
+      - "Contract integration mappings"
+      - "Composition rules and anti-patterns"

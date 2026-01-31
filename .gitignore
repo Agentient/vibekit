@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local settings
+.claude/settings.local.json
+CLAUDE.local.md
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp

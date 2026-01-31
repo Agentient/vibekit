@@ -1,0 +1,1394 @@
+# ============================================================================
+# TECHNIQUE TAXONOMY FOR SKILL FACTORY
+# ============================================================================
+# Version: 1.0
+# Purpose: Category-level metadata enabling intelligent technique selection
+# Usage: Skill Factory references this to compose domain-specific skills
+#
+# Structure:
+#   - 6 top-level categories (by cognitive advantage exploited)
+#   - 25 subcategories
+#   - ~200 individual techniques (enumerated but not fully tagged)
+#
+# Metadata at category level enables routing without exhaustive technique tagging
+# ============================================================================
+
+taxonomy_version: "1.0"
+last_updated: "2026-01-30"
+total_techniques: 203
+total_categories: 6
+total_subcategories: 25
+
+# ============================================================================
+# CATEGORY 1: PARALLEL PROCESSING
+# ============================================================================
+# Cognitive Advantage: Claude maintains multiple frames simultaneously without
+# context-switching cost. Humans think serially; Claude thinks in parallel.
+# ============================================================================
+
+parallel_processing:
+  id: CAT-PP
+  name: "Parallel Processing"
+  cognitive_advantage: "Simultaneous multi-frame cognition without context-switching degradation"
+
+  human_limitation_exploited:
+    - "Serial thinking forces sequential consideration"
+    - "Context-switching loses information"
+    - "Anchoring on first frame considered"
+    - "Forgetting earlier frames when considering later ones"
+
+  category_triggers:
+    - "multiple perspectives needed"
+    - "several scenarios to consider"
+    - "various stakeholders affected"
+    - "different frameworks could apply"
+    - "temporal tradeoffs exist"
+    - "competing objectives"
+    - "need to consider alternatives"
+
+  anti_triggers:
+    - "single clear answer exists"
+    - "objective/factual question"
+    - "simple lookup or retrieval"
+    - "linear sequential process"
+
+  domain_affinity:
+    architecture: 0.85 # Multi-perspective architectural review
+    product: 0.90 # Stakeholder simulation, framework analysis
+    strategy: 0.95 # Scenario planning, multi-timeline
+    research: 0.70 # Hypothesis tracking
+    security: 0.80 # Multi-attacker simulation
+    data_modeling: 0.60 # Lowerâ€”often more deterministic
+    operations: 0.65 # Some scenario planning
+    content: 0.40 # Rarely needs parallel frames
+
+  complexity:
+    token_overhead: "medium-high" # 2-8K tokens depending on frame count
+    cognitive_load: "medium" # Structured but requires synthesis
+    iteration_typical: 1 # Usually single-pass parallel
+
+  synergies:
+    strong:
+      - "unbiased_reasoning" # Parallel + bias-free = powerful evaluation
+      - "meta_cognitive" # Cross-frame synthesis benefits from meta-analysis
+    moderate:
+      - "perfect_recall" # Can enumerate while holding frames
+    weak:
+      - "probabilistic" # Some overlap in scenario modeling
+
+  conflicts:
+    - "rapid_iteration_modes" # Parallel is thorough, not fast
+
+  output_contribution:
+    - "Multi-perspective comparison matrix"
+    - "Stakeholder impact analysis"
+    - "Scenario robustness assessment"
+    - "Framework convergence/divergence map"
+    - "Temporal tradeoff visualization"
+
+  subcategories:
+    multi_frame_simultaneity:
+      id: CAT-PP-MFS
+      name: "Multi-Frame Simultaneity"
+      description: "Hold multiple cognitive frames (hypotheses, personas, lenses) simultaneously"
+      technique_count: 3
+      techniques:
+        - multi_hypothesis_tracking
+        - multi_persona_simulation
+        - multi_lens_analysis
+      primary_use_cases:
+        - "Root cause analysis with multiple plausible explanations"
+        - "Product decisions affecting multiple user segments"
+        - "Strategic analysis where multiple frameworks could apply"
+      triggers:
+        - "multiple plausible explanations"
+        - "different user types affected"
+        - "which framework should I use"
+      domain_affinity:
+        product: 0.95
+        strategy: 0.90
+        architecture: 0.80
+        research: 0.85
+
+    temporal_parallelism:
+      id: CAT-PP-TP
+      name: "Temporal Parallelism"
+      description: "Model multiple time horizons or future scenarios simultaneously"
+      technique_count: 3
+      techniques:
+        - multi_timeline_analysis
+        - parallel_future_cones
+        - premortem_postmortem_parallel
+      primary_use_cases:
+        - "Investment decisions with short/long-term tradeoffs"
+        - "Strategic planning under uncertainty"
+        - "Project planning with multiple possible outcomes"
+      triggers:
+        - "short-term vs long-term"
+        - "what could happen"
+        - "plan for success and failure"
+        - "temporal tradeoffs"
+      domain_affinity:
+        strategy: 0.95
+        product: 0.85
+        architecture: 0.75
+        operations: 0.70
+
+    dimensional_parallelism:
+      id: CAT-PP-DP
+      name: "Dimensional Parallelism"
+      description: "Analyze across multiple dimensions (criteria, stakeholders, system levels) simultaneously"
+      technique_count: 3
+      techniques:
+        - multi_criteria_optimization
+        - multi_stakeholder_impact_matrix
+        - multi_level_system_impact
+      primary_use_cases:
+        - "Pareto-optimal solution finding"
+        - "Organizational change impact assessment"
+        - "Multi-stakeholder decision analysis"
+      triggers:
+        - "multiple competing objectives"
+        - "many stakeholders"
+        - "ripple effects across levels"
+        - "optimize across dimensions"
+      domain_affinity:
+        product: 0.90
+        strategy: 0.85
+        architecture: 0.80
+        operations: 0.75
+
+    constraint_parallelism:
+      id: CAT-PP-CP
+      name: "Constraint Parallelism"
+      description: "Explore constraint relaxation and boundary stress-testing in parallel"
+      technique_count: 2
+      techniques:
+        - parallel_constraint_relaxation
+        - multi_boundary_stress_testing
+      primary_use_cases:
+        - "Finding which constraints are truly binding"
+        - "Identifying system breaking points"
+        - "Exploring 'what if' constraint scenarios"
+      triggers:
+        - "feeling constrained"
+        - "what would break first"
+        - "which constraint matters most"
+        - "stress test"
+      domain_affinity:
+        architecture: 0.90
+        operations: 0.85
+        product: 0.70
+        security: 0.80
+
+    solution_space_parallelism:
+      id: CAT-PP-SSP
+      name: "Solution Space Parallelism"
+      description: "Generate and explore multiple solution paths without cross-contamination"
+      technique_count: 2
+      techniques:
+        - parallel_solution_generation
+        - parallel_path_planning
+      primary_use_cases:
+        - "Creative problem-solving without anchoring"
+        - "Comparing execution strategies"
+        - "Migration planning with multiple paths"
+      triggers:
+        - "need creative solutions"
+        - "multiple ways to achieve goal"
+        - "which path should we take"
+      domain_affinity:
+        product: 0.85
+        architecture: 0.80
+        strategy: 0.85
+        operations: 0.75
+
+    adversarial_parallelism:
+      id: CAT-PP-AP
+      name: "Adversarial Parallelism"
+      description: "Simulate multiple attackers or devil's advocates simultaneously"
+      technique_count: 2
+      techniques:
+        - multi_attacker_simulation
+        - parallel_devils_advocates
+      primary_use_cases:
+        - "Security threat modeling"
+        - "Plan stress-testing from multiple angles"
+        - "Risk assessment"
+      triggers:
+        - "security review"
+        - "what could go wrong"
+        - "attack this plan"
+        - "find weaknesses"
+      domain_affinity:
+        security: 0.95
+        architecture: 0.85
+        strategy: 0.80
+        product: 0.75
+
+    analytical_parallelism:
+      id: CAT-PP-ANP
+      name: "Analytical Parallelism"
+      description: "Apply multiple decomposition strategies or granularities simultaneously"
+      technique_count: 2
+      techniques:
+        - parallel_decomposition_strategies
+        - multi_granularity_analysis
+      primary_use_cases:
+        - "Understanding problem structure"
+        - "Finding natural system boundaries"
+        - "Analyzing at appropriate zoom level"
+      triggers:
+        - "how should I break this down"
+        - "finding the right zoom level"
+        - "understanding structure"
+      domain_affinity:
+        architecture: 0.90
+        data_modeling: 0.85
+        product: 0.70
+        research: 0.75
+
+# ============================================================================
+# CATEGORY 2: PERFECT RECALL
+# ============================================================================
+# Cognitive Advantage: Claude maintains perfect access to all context without
+# decay, interference, or reconstruction errors. Humans forget and distort.
+# ============================================================================
+
+perfect_recall:
+  id: CAT-PR
+  name: "Perfect Recall"
+  cognitive_advantage: "Uniform access to all context without decay, interference, or reconstruction"
+
+  human_limitation_exploited:
+    - "Working memory ceiling (7Â±2 items)"
+    - "Information decay over conversation"
+    - "Interference from new information"
+    - "Reconstruction errors in recall"
+    - "Serial position effects (primacy/recency)"
+    - "Source confusion"
+
+  category_triggers:
+    - "check for consistency"
+    - "make sure nothing is missing"
+    - "trace through all dependencies"
+    - "verify completeness"
+    - "audit the document"
+    - "find contradictions"
+    - "enumerate all cases"
+
+  anti_triggers:
+    - "quick summary needed"
+    - "high-level overview"
+    - "simple question"
+    - "creative generation"
+
+  domain_affinity:
+    architecture: 0.90 # Dependency mapping, consistency
+    data_modeling: 0.95 # Schema validation, constraint checking
+    security: 0.90 # Complete enumeration critical
+    product: 0.70 # PRD review, requirement tracing
+    research: 0.65 # Source tracking
+    strategy: 0.50 # Less enumeration-focused
+    content: 0.40 # Rarely needs exhaustive recall
+    operations: 0.75 # Checklist, procedure verification
+
+  complexity:
+    token_overhead: "high" # Exhaustive enumeration is verbose
+    cognitive_load: "low-medium" # Systematic, not creative
+    iteration_typical: 1-2 # Enumerate, then verify
+
+  synergies:
+    strong:
+      - "meta_cognitive" # Recall enables reasoning chain audit
+    moderate:
+      - "parallel_processing" # Can enumerate while holding frames
+      - "unbiased_reasoning" # Complete evidence gathering
+    weak:
+      - "probabilistic" # Some overlap in completeness
+
+  conflicts:
+    - "rapid_iteration_modes" # Exhaustive is slow
+    - "creative_generation" # Enumeration â‰  creativity
+
+  output_contribution:
+    - "Consistency matrix"
+    - "Complete dependency graph"
+    - "Gap analysis report"
+    - "Traceability matrix"
+    - "Assumption inventory"
+    - "Edge case catalog"
+
+  subcategories:
+    exhaustive_cross_reference:
+      id: CAT-PR-ECR
+      name: "Exhaustive Cross-Reference"
+      description: "Compare every item to every other item systematically"
+      technique_count: 3
+      techniques:
+        - full_consistency_matrix
+        - complete_dependency_graph
+        - pairwise_semantic_similarity
+      primary_use_cases:
+        - "Document contradiction detection"
+        - "System dependency mapping"
+        - "Duplicate/overlap identification"
+      triggers:
+        - "check for contradictions"
+        - "what depends on what"
+        - "find duplicates or overlap"
+      domain_affinity:
+        architecture: 0.95
+        data_modeling: 0.90
+        product: 0.80
+
+    complete_enumeration:
+      id: CAT-PR-CE
+      name: "Complete Enumeration"
+      description: "List ALL instances without missing any"
+      technique_count: 3
+      techniques:
+        - exhaustive_edge_case_enumeration
+        - complete_assumption_inventory
+        - complete_state_space_enumeration
+      primary_use_cases:
+        - "QA test case generation"
+        - "Assumption surfacing"
+        - "State machine validation"
+      triggers:
+        - "what are all the edge cases"
+        - "what assumptions are we making"
+        - "enumerate all states"
+      domain_affinity:
+        security: 0.95
+        architecture: 0.90
+        data_modeling: 0.90
+        operations: 0.80
+
+    invariant_maintenance:
+      id: CAT-PR-IM
+      name: "Invariant Maintenance"
+      description: "Track and verify properties that must always hold"
+      technique_count: 2
+      techniques:
+        - invariant_verification
+        - constraint_propagation_analysis
+      primary_use_cases:
+        - "System invariant validation"
+        - "Constraint cascade analysis"
+        - "Rule consistency checking"
+      triggers:
+        - "what must always be true"
+        - "check all constraints"
+        - "what breaks if X changes"
+      domain_affinity:
+        architecture: 0.95
+        data_modeling: 0.95
+        security: 0.85
+
+    provenance_tracking:
+      id: CAT-PR-PT
+      name: "Provenance Tracking"
+      description: "Track origin and chain of custody for information"
+      technique_count: 2
+      techniques:
+        - decision_provenance_tracking
+        - information_source_tracking
+      primary_use_cases:
+        - "Decision audit trails"
+        - "Source reliability assessment"
+        - "Claim attribution"
+      triggers:
+        - "where did this come from"
+        - "why did we decide this"
+        - "trace the source"
+      domain_affinity:
+        research: 0.90
+        strategy: 0.75
+        architecture: 0.70
+
+    version_comparison:
+      id: CAT-PR-VC
+      name: "Version Comparison"
+      description: "Systematic comparison across versions or time"
+      technique_count: 2
+      techniques:
+        - version_delta_analysis
+        - timeline_consistency_verification
+      primary_use_cases:
+        - "Change impact analysis"
+        - "Timeline validation"
+        - "Drift detection"
+      triggers:
+        - "what changed between versions"
+        - "are dates consistent"
+        - "how has this evolved"
+      domain_affinity:
+        architecture: 0.85
+        operations: 0.80
+        data_modeling: 0.75
+
+    gap_analysis:
+      id: CAT-PR-GA
+      name: "Gap Analysis"
+      description: "Systematic identification of what's missing"
+      technique_count: 3
+      techniques:
+        - mece_gap_detection
+        - negative_space_analysis
+        - completeness_verification
+      primary_use_cases:
+        - "Coverage analysis"
+        - "Missing requirement detection"
+        - "Completeness audits"
+      triggers:
+        - "what's missing"
+        - "is this complete"
+        - "find the gaps"
+      domain_affinity:
+        product: 0.90
+        architecture: 0.85
+        research: 0.80
+        strategy: 0.75
+
+    historical_pattern_matching:
+      id: CAT-PR-HPM
+      name: "Historical Pattern Matching"
+      description: "Match current situation to historical patterns"
+      technique_count: 1
+      techniques:
+        - historical_pattern_matching
+      primary_use_cases:
+        - "Incident response"
+        - "Strategic pattern recognition"
+        - "Learning from precedent"
+      triggers:
+        - "have we seen this before"
+        - "what happened last time"
+        - "similar situations"
+      domain_affinity:
+        operations: 0.85
+        strategy: 0.80
+        architecture: 0.70
+
+# ============================================================================
+# CATEGORY 3: UNBIASED REASONING
+# ============================================================================
+# Cognitive Advantage: Claude has no ego investment, sunk costs, or motivated
+# reasoning. Can genuinely argue any position and evaluate evidence objectively.
+# ============================================================================
+
+unbiased_reasoning:
+  id: CAT-UR
+  name: "Unbiased Reasoning"
+  cognitive_advantage: "No ego investment, sunk costs, emotional stakes, or motivated reasoning"
+
+  human_limitation_exploited:
+    - "Confirmation bias"
+    - "Sunk cost fallacy"
+    - "Anchoring bias"
+    - "Availability bias"
+    - "Loss aversion"
+    - "Authority bias"
+    - "Hindsight bias"
+    - "Framing effects"
+
+  category_triggers:
+    - "challenge my thinking"
+    - "what am I missing"
+    - "argue the other side"
+    - "am I biased"
+    - "stress test this"
+    - "devil's advocate"
+    - "red team this"
+
+  anti_triggers:
+    - "just execute this"
+    - "don't question, just do"
+    - "factual lookup"
+    - "simple generation"
+
+  domain_affinity:
+    strategy: 0.95 # Critical for strategic decisions
+    product: 0.90 # Feature decisions need debiasing
+    architecture: 0.85 # Technical decisions have biases
+    research: 0.90 # Objective evidence evaluation
+    security: 0.80 # Adversarial thinking
+    operations: 0.60 # Less judgment-heavy
+    data_modeling: 0.55 # More deterministic
+    content: 0.50 # Some relevance for persuasion analysis
+
+  complexity:
+    token_overhead: "medium-high" # Adversarial reasoning is verbose
+    cognitive_load: "high" # Requires genuine position-switching
+    iteration_typical: 2-3 # Often iterative refinement
+
+  synergies:
+    strong:
+      - "parallel_processing" # Multi-perspective + unbiased = powerful
+      - "meta_cognitive" # Self-audit complements debiasing
+    moderate:
+      - "perfect_recall" # Complete evidence gathering
+    weak:
+      - "probabilistic" # Calibration overlaps
+
+  conflicts:
+    - "rapid_execution" # Debiasing takes time
+    - "creative_brainstorming" # Sometimes bias is useful for creativity
+
+  output_contribution:
+    - "Steel-manned counter-argument"
+    - "Bias audit report"
+    - "Evidence strength assessment"
+    - "Position-swapped analysis"
+    - "Frame-independent evaluation"
+
+  subcategories:
+    genuine_adversarial_thinking:
+      id: CAT-UR-GAT
+      name: "Genuine Adversarial Thinking"
+      description: "Argue against positions without half-heartedness"
+      technique_count: 3
+      techniques:
+        - true_steel_manning
+        - ideological_turing_test
+        - adversarial_collaboration_simulation
+      primary_use_cases:
+        - "Testing strategy robustness"
+        - "Understanding opposition"
+        - "Stress-testing proposals"
+      triggers:
+        - "argue against this"
+        - "what's the best counter-argument"
+        - "stress test my position"
+      domain_affinity:
+        strategy: 0.95
+        product: 0.85
+        architecture: 0.80
+
+    bias_detection_mitigation:
+      id: CAT-UR-BDM
+      name: "Bias Detection & Mitigation"
+      description: "Systematically identify and correct for cognitive biases"
+      technique_count: 2
+      techniques:
+        - comprehensive_bias_audit
+        - disconfirmation_hunt
+      primary_use_cases:
+        - "Decision quality assurance"
+        - "Self-audit before committing"
+        - "Finding overlooked evidence"
+      triggers:
+        - "am I biased here"
+        - "what evidence am I ignoring"
+        - "audit my reasoning"
+      domain_affinity:
+        strategy: 0.90
+        research: 0.90
+        product: 0.85
+
+    frame_independence:
+      id: CAT-UR-FI
+      name: "Frame Independence"
+      description: "Analyze same information under different frames to detect framing effects"
+      technique_count: 2
+      techniques:
+        - frame_equivalence_testing
+        - fresh_eyes_protocol
+      primary_use_cases:
+        - "Detecting how framing affects judgment"
+        - "Removing anchoring effects"
+        - "Re-evaluating with fresh perspective"
+      triggers:
+        - "is the framing affecting my judgment"
+        - "look at this with fresh eyes"
+        - "ignore sunk costs"
+      domain_affinity:
+        strategy: 0.85
+        product: 0.80
+        research: 0.75
+
+    evidence_evaluation:
+      id: CAT-UR-EE
+      name: "Evidence Evaluation"
+      description: "Objectively assess evidence strength and relevance"
+      technique_count: 2
+      techniques:
+        - evidence_strength_tribunal
+        - base_rate_integration
+      primary_use_cases:
+        - "Evaluating claims objectively"
+        - "Calibrating to base rates"
+        - "Assessing evidence quality"
+      triggers:
+        - "how strong is this evidence"
+        - "what's the base rate"
+        - "evaluate these claims"
+      domain_affinity:
+        research: 0.95
+        strategy: 0.85
+        product: 0.75
+
+    position_independence:
+      id: CAT-UR-PI
+      name: "Position Independence"
+      description: "Evaluate arguments independent of initial position"
+      technique_count: 3
+      techniques:
+        - position_swap_debate
+        - belief_revision_simulation
+        - ideological_humility_test
+      primary_use_cases:
+        - "Genuinely considering alternatives"
+        - "Modeling belief updates"
+        - "Testing position attachment"
+      triggers:
+        - "argue the other side"
+        - "what would change my mind"
+        - "am I too attached to this position"
+      domain_affinity:
+        strategy: 0.90
+        product: 0.80
+        research: 0.85
+
+    process_outcome_separation:
+      id: CAT-UR-POS
+      name: "Process-Outcome Separation"
+      description: "Evaluate decision quality independent of outcome"
+      technique_count: 2
+      techniques:
+        - process_quality_audit
+        - counterfactual_process_analysis
+      primary_use_cases:
+        - "Post-mortem analysis"
+        - "Decision process improvement"
+        - "Fair evaluation of past choices"
+      triggers:
+        - "was this a good decision regardless of outcome"
+        - "what can we learn from this"
+        - "evaluate the process not the result"
+      domain_affinity:
+        strategy: 0.85
+        operations: 0.80
+        product: 0.75
+
+    emotional_decontamination:
+      id: CAT-UR-ED
+      name: "Emotional Decontamination"
+      description: "Analyze without emotional loading or taboo effects"
+      technique_count: 2
+      techniques:
+        - affect_stripping
+        - taboo_normalized_analysis
+      primary_use_cases:
+        - "Conflict resolution"
+        - "Controversial topic analysis"
+        - "Removing emotional charge"
+      triggers:
+        - "analyze this objectively"
+        - "remove the emotion"
+        - "what are the actual facts"
+      domain_affinity:
+        strategy: 0.80
+        product: 0.70
+        research: 0.75
+
+# ============================================================================
+# CATEGORY 4: META-COGNITIVE
+# ============================================================================
+# Cognitive Advantage: Claude can examine, monitor, and improve its own
+# reasoning processes with explicit access to reasoning chains.
+# ============================================================================
+
+meta_cognitive:
+  id: CAT-MC
+  name: "Meta-Cognitive"
+  cognitive_advantage: "Explicit access to reasoning chains enables self-audit and improvement"
+
+  human_limitation_exploited:
+    - "Introspection illusion"
+    - "Overconfidence"
+    - "Dunning-Kruger effect"
+    - "Blind spot bias"
+    - "Narrative smoothing"
+    - "Method opacity"
+
+  category_triggers:
+    - "check my reasoning"
+    - "is this logic valid"
+    - "what's my confidence level"
+    - "what don't I know"
+    - "am I using the right approach"
+    - "quality check this"
+
+  anti_triggers:
+    - "just answer quickly"
+    - "don't overthink"
+    - "simple factual question"
+
+  domain_affinity:
+    research: 0.95 # Epistemic rigor critical
+    architecture: 0.85 # Reasoning validation important
+    strategy: 0.90 # High-stakes decisions need meta-analysis
+    product: 0.75 # Moderate meta-cognitive needs
+    security: 0.80 # Reasoning validation matters
+    operations: 0.60 # More procedural
+    data_modeling: 0.65 # Some validation needs
+    content: 0.50 # Less meta-cognitive
+
+  complexity:
+    token_overhead: "medium" # Adds audit layer
+    cognitive_load: "medium-high" # Thinking about thinking
+    iteration_typical: 1-2 # Audit, possibly revise
+
+  synergies:
+    strong:
+      - "unbiased_reasoning" # Meta-cognition catches biases
+      - "perfect_recall" # Enables full chain audit
+    moderate:
+      - "parallel_processing" # Cross-method comparison
+      - "probabilistic" # Confidence calibration overlap
+    weak:
+      - "structured_decomposition" # Some overlap
+
+  conflicts:
+    - "rapid_execution" # Meta-cognition adds overhead
+
+  output_contribution:
+    - "Reasoning chain audit report"
+    - "Confidence calibration assessment"
+    - "Uncertainty decomposition"
+    - "Knowledge gap inventory"
+    - "Epistemic status labels"
+
+  subcategories:
+    reasoning_chain_analysis:
+      id: CAT-MC-RCA
+      name: "Reasoning Chain Analysis"
+      description: "Examine structure and validity of reasoning"
+      technique_count: 2
+      techniques:
+        - logical_chain_audit
+        - inference_type_matching
+      primary_use_cases:
+        - "Validating argument structure"
+        - "Finding logical gaps"
+        - "Checking inference types"
+      triggers:
+        - "is my reasoning valid"
+        - "check the logic"
+        - "am I making logical leaps"
+      domain_affinity:
+        research: 0.95
+        architecture: 0.85
+        strategy: 0.85
+
+    knowledge_state_assessment:
+      id: CAT-MC-KSA
+      name: "Knowledge State Assessment"
+      description: "Map what is known, unknown, and unknowable"
+      technique_count: 3
+      techniques:
+        - gap_detection
+        - unknown_unknowns_probe
+        - knowledge_map
+      primary_use_cases:
+        - "Identifying knowledge gaps"
+        - "Finding unknown unknowns"
+        - "Mapping epistemic state"
+      triggers:
+        - "what don't I know"
+        - "what might I be missing"
+        - "map my knowledge"
+      domain_affinity:
+        research: 0.95
+        strategy: 0.85
+        architecture: 0.80
+
+    uncertainty_management:
+      id: CAT-MC-UM
+      name: "Uncertainty Management"
+      description: "Classify, calibrate, and track uncertainty"
+      technique_count: 3
+      techniques:
+        - uncertainty_decomposition
+        - confidence_calibration
+        - confidence_tracking
+      primary_use_cases:
+        - "Distinguishing uncertainty types"
+        - "Calibrating confidence levels"
+        - "Tracking confidence changes"
+      triggers:
+        - "how confident should I be"
+        - "what type of uncertainty is this"
+        - "calibrate my estimates"
+      domain_affinity:
+        research: 0.95
+        strategy: 0.90
+        product: 0.80
+
+    method_selection:
+      id: CAT-MC-MS
+      name: "Method Selection"
+      description: "Choose appropriate reasoning approach for problem type"
+      technique_count: 3
+      techniques:
+        - problem_type_classification
+        - reasoning_strategy_selection
+        - tool_technique_matching
+      primary_use_cases:
+        - "Matching method to problem"
+        - "Selecting appropriate tools"
+        - "Optimizing approach"
+      triggers:
+        - "what's the right approach"
+        - "which method should I use"
+        - "am I using the right tool"
+      domain_affinity:
+        architecture: 0.85
+        research: 0.80
+        strategy: 0.80
+
+    output_quality_assurance:
+      id: CAT-MC-OQA
+      name: "Output Quality Assurance"
+      description: "Evaluate quality of outputs before delivery"
+      technique_count: 3
+      techniques:
+        - output_quality_audit
+        - explanation_quality_check
+        - recommendation_quality_check
+      primary_use_cases:
+        - "Pre-delivery quality check"
+        - "Explanation validation"
+        - "Recommendation verification"
+      triggers:
+        - "is this good enough"
+        - "quality check before sending"
+        - "verify the output"
+      domain_affinity:
+        content: 0.85
+        product: 0.80
+        architecture: 0.80
+
+    learning_extraction:
+      id: CAT-MC-LE
+      name: "Learning Extraction"
+      description: "Extract generalizable patterns from experience"
+      technique_count: 3
+      techniques:
+        - generalizable_lesson_extraction
+        - cross_case_pattern_recognition
+        - mistake_taxonomy
+      primary_use_cases:
+        - "Post-mortem learning"
+        - "Pattern identification"
+        - "Mistake categorization"
+      triggers:
+        - "what can we learn from this"
+        - "are there patterns"
+        - "categorize the mistakes"
+      domain_affinity:
+        operations: 0.85
+        strategy: 0.80
+        product: 0.75
+
+    epistemic_hygiene:
+      id: CAT-MC-EH
+      name: "Epistemic Hygiene"
+      description: "Label and manage epistemic status of claims"
+      technique_count: 1
+      techniques:
+        - epistemic_status_labeling
+      primary_use_cases:
+        - "Communicating uncertainty"
+        - "Intellectual honesty"
+        - "Reader guidance"
+      triggers:
+        - "label the certainty levels"
+        - "what's fact vs assumption"
+        - "epistemic status"
+      domain_affinity:
+        research: 0.95
+        strategy: 0.85
+        architecture: 0.80
+
+# ============================================================================
+# CATEGORY 5: PROBABILISTIC THINKING
+# ============================================================================
+# Cognitive Advantage: Treats beliefs as probabilities, enables calibration,
+# and structures reasoning under uncertainty.
+# ============================================================================
+
+probabilistic:
+  id: CAT-PROB
+  name: "Probabilistic Thinking"
+  cognitive_advantage: "Systematic treatment of uncertainty with explicit probability assignments"
+
+  human_limitation_exploited:
+    - "Treating beliefs as binary (true/false)"
+    - "Vague probability language"
+    - "Overconfidence in estimates"
+    - "Ignoring base rates"
+    - "Poor intuitive probability"
+
+  category_triggers:
+    - "estimate the probability"
+    - "how likely is this"
+    - "what's the expected value"
+    - "confidence interval"
+    - "base rate"
+    - "quantify uncertainty"
+
+  anti_triggers:
+    - "no numbers needed"
+    - "qualitative assessment only"
+    - "creative brainstorming"
+
+  domain_affinity:
+    strategy: 0.90 # Investment, resource allocation
+    product: 0.85 # Prioritization, estimation
+    research: 0.85 # Uncertainty quantification
+    architecture: 0.70 # Capacity planning
+    operations: 0.75 # Forecasting
+    security: 0.70 # Risk quantification
+    data_modeling: 0.60 # Some estimation
+    content: 0.30 # Rarely needed
+
+  complexity:
+    token_overhead: "low-medium" # Numbers are compact
+    cognitive_load: "medium" # Requires numerical thinking
+    iteration_typical: 1-2 # Estimate, possibly refine
+
+  synergies:
+    strong:
+      - "meta_cognitive" # Confidence calibration overlap
+    moderate:
+      - "unbiased_reasoning" # Base rate integration
+      - "parallel_processing" # Scenario probability
+    weak:
+      - "perfect_recall" # Some completeness overlap
+
+  conflicts:
+    - "qualitative_only_modes" # Probabilistic requires numbers
+
+  output_contribution:
+    - "Probability estimates with ranges"
+    - "Expected value calculations"
+    - "Fermi decomposition"
+    - "Confidence intervals"
+    - "Risk quantification"
+
+  subcategories:
+    fermi_estimation:
+      id: CAT-PROB-FE
+      name: "Fermi Estimation"
+      description: "Decompose unknowable quantities into estimable components"
+      technique_count: 1
+      techniques:
+        - fermi_estimation
+      primary_use_cases:
+        - "Market sizing"
+        - "Resource estimation"
+        - "Sanity checking claims"
+      triggers:
+        - "estimate how many"
+        - "rough calculation"
+        - "order of magnitude"
+      domain_affinity:
+        strategy: 0.95
+        product: 0.90
+        operations: 0.80
+
+    expected_value_analysis:
+      id: CAT-PROB-EVA
+      name: "Expected Value Analysis"
+      description: "Weight outcomes by probability for decision-making"
+      technique_count: 1
+      techniques:
+        - expected_value_calculation
+      primary_use_cases:
+        - "Investment decisions"
+        - "Option comparison"
+        - "Risk-adjusted evaluation"
+      triggers:
+        - "what's the expected value"
+        - "weight by probability"
+        - "risk-adjusted"
+      domain_affinity:
+        strategy: 0.95
+        product: 0.85
+        architecture: 0.70
+
+    confidence_quantification:
+      id: CAT-PROB-CQ
+      name: "Confidence Quantification"
+      description: "Express uncertainty as ranges rather than points"
+      technique_count: 2
+      techniques:
+        - confidence_intervals
+        - explicit_probability_assignment
+      primary_use_cases:
+        - "Estimation with uncertainty"
+        - "Translating vague words to numbers"
+        - "Calibration"
+      triggers:
+        - "give me a range"
+        - "confidence interval"
+        - "what probability"
+      domain_affinity:
+        research: 0.90
+        strategy: 0.85
+        operations: 0.80
+
+# ============================================================================
+# CATEGORY 6: STRUCTURED DECOMPOSITION & PLANNING
+# ============================================================================
+# Cognitive Advantage: Systematic approaches to breaking down problems,
+# planning, and structuring communication. Classic techniques often underused.
+# ============================================================================
+
+structured_decomposition:
+  id: CAT-SD
+  name: "Structured Decomposition & Planning"
+  cognitive_advantage: "Systematic problem breakdown and communication structures"
+
+  human_limitation_exploited:
+    - "Diving in without structure"
+    - "Optimism bias in planning"
+    - "Forgetting negative paths"
+    - "Poor communication structure"
+    - "Avoiding pre-commitment"
+
+  category_triggers:
+    - "break this down"
+    - "structure this"
+    - "plan for failure"
+    - "communicate clearly"
+    - "prevent failure"
+    - "decompose"
+
+  anti_triggers:
+    - "quick answer needed"
+    - "informal discussion"
+    - "brainstorming only"
+
+  domain_affinity:
+    architecture: 0.90 # Decomposition critical
+    product: 0.85 # Requirements, planning
+    strategy: 0.85 # Communication, planning
+    operations: 0.85 # Process, checklists
+    research: 0.70 # Some structure needed
+    security: 0.75 # Systematic analysis
+    data_modeling: 0.80 # Decomposition important
+    content: 0.80 # Communication structures
+
+  complexity:
+    token_overhead: "low-medium" # Structure is efficient
+    cognitive_load: "low-medium" # Systematic, not creative
+    iteration_typical: 1 # Usually single-pass
+
+  synergies:
+    strong:
+      - "perfect_recall" # Enumeration + structure
+    moderate:
+      - "meta_cognitive" # Method selection overlap
+      - "parallel_processing" # Decomposition overlap
+    weak:
+      - "probabilistic" # Some planning overlap
+
+  conflicts:
+    - "pure_creative_modes" # Structure can constrain
+
+  output_contribution:
+    - "MECE decomposition"
+    - "Pre-mortem analysis"
+    - "Kill criteria"
+    - "Obstacle-first plan"
+    - "SCQA communication"
+
+  subcategories:
+    inversion_negative_thinking:
+      id: CAT-SD-INT
+      name: "Inversion & Negative Thinking"
+      description: "Plan for failure to prevent it"
+      technique_count: 3
+      techniques:
+        - inversion_via_negativa
+        - premortem
+        - kill_criteria
+      primary_use_cases:
+        - "Risk identification"
+        - "Failure prevention"
+        - "Decision criteria"
+      triggers:
+        - "what could go wrong"
+        - "how do we fail"
+        - "when do we stop"
+      domain_affinity:
+        strategy: 0.95
+        product: 0.90
+        operations: 0.85
+
+    structured_planning:
+      id: CAT-SD-SP
+      name: "Structured Planning"
+      description: "Systematic approaches to planning"
+      technique_count: 2
+      techniques:
+        - obstacle_first_planning
+        - mece_decomposition
+      primary_use_cases:
+        - "Project planning"
+        - "Problem structuring"
+        - "Comprehensive coverage"
+      triggers:
+        - "plan this out"
+        - "break this down"
+        - "structure the problem"
+      domain_affinity:
+        architecture: 0.90
+        product: 0.85
+        operations: 0.85
+
+    perspective_shifting:
+      id: CAT-SD-PS
+      name: "Perspective Shifting"
+      description: "Change viewpoint to gain insight"
+      technique_count: 4
+      techniques:
+        - ten_ten_ten_rule
+        - regret_minimization
+        - stakeholder_mapping
+        - outsider_test
+      primary_use_cases:
+        - "Decision clarity"
+        - "Stakeholder analysis"
+        - "Emotional decisions"
+      triggers:
+        - "how will I feel about this later"
+        - "who are the stakeholders"
+        - "what would an outsider think"
+      domain_affinity:
+        strategy: 0.90
+        product: 0.85
+        operations: 0.70
+
+    decision_hygiene:
+      id: CAT-SD-DH
+      name: "Decision Hygiene"
+      description: "Systematic practices for better decisions"
+      technique_count: 3
+      techniques:
+        - decision_journal
+        - precommitment
+        - checklists
+      primary_use_cases:
+        - "Decision tracking"
+        - "Commitment devices"
+        - "Error prevention"
+      triggers:
+        - "track my decisions"
+        - "commit to criteria"
+        - "checklist"
+      domain_affinity:
+        operations: 0.95
+        strategy: 0.85
+        architecture: 0.80
+
+    communication_structures:
+      id: CAT-SD-CS
+      name: "Communication Structures"
+      description: "Frameworks for clear communication"
+      technique_count: 3
+      techniques:
+        - scqa
+        - pyramid_principle
+        - independent_judgment_first
+      primary_use_cases:
+        - "Executive communication"
+        - "Report structuring"
+        - "Group decision-making"
+      triggers:
+        - "communicate to executives"
+        - "structure the report"
+        - "get independent opinions first"
+      domain_affinity:
+        strategy: 0.95
+        content: 0.90
+        product: 0.85
+
+    disagreement_resolution:
+      id: CAT-SD-DR
+      name: "Disagreement Resolution"
+      description: "Structured approaches to resolving disagreements"
+      technique_count: 1
+      techniques:
+        - wwhtbt # What Would Have To Be True
+      primary_use_cases:
+        - "Resolving debates"
+        - "Finding cruxes"
+        - "Productive disagreement"
+      triggers:
+        - "we disagree on this"
+        - "what would have to be true"
+        - "find the crux"
+      domain_affinity:
+        strategy: 0.90
+        product: 0.85
+        architecture: 0.80
+
+    creativity_techniques:
+      id: CAT-SD-CT
+      name: "Creativity Techniques"
+      description: "Structured approaches to creativity"
+      technique_count: 3
+      techniques:
+        - scamper
+        - constraint_manipulation
+        - random_input
+      primary_use_cases:
+        - "Product innovation"
+        - "Problem-solving"
+        - "Breaking mental ruts"
+      triggers:
+        - "generate ideas"
+        - "think creatively"
+        - "break out of the rut"
+      domain_affinity:
+        product: 0.95
+        strategy: 0.80
+        content: 0.85
+
+    first_principles:
+      id: CAT-SD-FP
+      name: "First Principles & Abstraction"
+      description: "Fundamental decomposition and abstraction laddering"
+      technique_count: 3
+      techniques:
+        - first_principles_reconstruction
+        - abstraction_laddering
+        - recursive_decomposition
+      primary_use_cases:
+        - "Escaping local optima"
+        - "Finding right abstraction level"
+        - "Breaking down complexity"
+      triggers:
+        - "from first principles"
+        - "what's the right abstraction"
+        - "break this down recursively"
+      domain_affinity:
+        architecture: 0.95
+        strategy: 0.85
+        research: 0.80
+
+# ============================================================================
+# CROSS-CATEGORY METADATA
+# ============================================================================
+
+cross_category_patterns:
+  high_synergy_combinations:
+    - name: "MoE Decision Pattern"
+      categories: [parallel_processing, unbiased_reasoning, meta_cognitive]
+      description: "Multi-perspective + debiased + quality-checked"
+      use_case: "High-stakes decisions requiring multiple viewpoints"
+
+    - name: "Comprehensive Audit Pattern"
+      categories: [perfect_recall, meta_cognitive, structured_decomposition]
+      description: "Exhaustive enumeration + reasoning audit + structured output"
+      use_case: "Document review, compliance checking, due diligence"
+
+    - name: "Research Synthesis Pattern"
+      categories: [parallel_processing, perfect_recall, probabilistic]
+      description: "Multi-source + complete tracking + uncertainty quantification"
+      use_case: "Research consolidation, literature review"
+
+    - name: "Strategy Validation Pattern"
+      categories: [unbiased_reasoning, structured_decomposition, probabilistic]
+      description: "Debiased analysis + failure planning + quantified risk"
+      use_case: "Strategy review, investment decisions"
+
+  anti_patterns:
+    - name: "Analysis Paralysis"
+      categories: [perfect_recall, meta_cognitive, parallel_processing]
+      warning: "Combining exhaustive techniques can create infinite loops"
+      mitigation: "Set explicit stopping criteria before starting"
+
+    - name: "Overhead Explosion"
+      categories: [meta_cognitive, unbiased_reasoning]
+      warning: "Every technique adds tokens; combined overhead can exceed value"
+      mitigation: "Match technique depth to decision stakes"
+
+# ============================================================================
+# DOMAIN-TO-CATEGORY ROUTING MATRIX
+# ============================================================================
+# Quick reference for Skill Factory: given a domain, which categories are primary?
+
+domain_routing:
+  architecture:
+    primary: [parallel_processing, perfect_recall, structured_decomposition]
+    secondary: [meta_cognitive, unbiased_reasoning]
+    rarely: [probabilistic]
+
+  product:
+    primary: [parallel_processing, unbiased_reasoning, structured_decomposition]
+    secondary: [meta_cognitive, probabilistic]
+    rarely: [perfect_recall] # Unless PRD review
+
+  strategy:
+    primary: [parallel_processing, unbiased_reasoning, probabilistic]
+    secondary: [structured_decomposition, meta_cognitive]
+    rarely: [perfect_recall]
+
+  research:
+    primary: [meta_cognitive, unbiased_reasoning, perfect_recall]
+    secondary: [parallel_processing, probabilistic]
+    rarely: [structured_decomposition]
+
+  security:
+    primary: [perfect_recall, parallel_processing]
+    secondary: [unbiased_reasoning, structured_decomposition]
+    rarely: [probabilistic, meta_cognitive]
+
+  data_modeling:
+    primary: [perfect_recall, structured_decomposition]
+    secondary: [parallel_processing]
+    rarely: [unbiased_reasoning, probabilistic, meta_cognitive]
+
+  operations:
+    primary: [structured_decomposition, perfect_recall]
+    secondary: [parallel_processing, probabilistic]
+    rarely: [unbiased_reasoning, meta_cognitive]
+
+  content:
+    primary: [structured_decomposition]
+    secondary: [meta_cognitive]
+    rarely:
+      [parallel_processing, perfect_recall, unbiased_reasoning, probabilistic]
+
+# ============================================================================
+# TECHNIQUE COUNT SUMMARY
+# ============================================================================
+
+technique_summary:
+  parallel_processing:
+    subcategories: 7
+    techniques: 17
+  perfect_recall:
+    subcategories: 7
+    techniques: 16
+  unbiased_reasoning:
+    subcategories: 7
+    techniques: 16
+  meta_cognitive:
+    subcategories: 7
+    techniques: 18
+  probabilistic:
+    subcategories: 3
+    techniques: 4
+  structured_decomposition:
+    subcategories: 8
+    techniques: 22
+
+  total_subcategories: 39 # Note: some techniques appear in multiple contexts
+  total_unique_techniques: ~93 # Core techniques; variants bring to ~200+

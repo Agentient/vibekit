@@ -1,0 +1,1155 @@
+# ============================================================================
+# PROMPT TEMPLATES LIBRARY
+# ============================================================================
+# Version: 1.0
+# Purpose: Portable prompt templates for multi-model workflows
+#
+# This library enables:
+#   1. Generate prompts from skill patterns for use with Gemini, GPT, Claude
+#   2. Apply model-specific adaptations automatically
+#   3. Handle context handoffs between models safely
+#   4. Produce complete, ready-to-use prompts
+#
+# Design principles:
+#   - Model-aware: Adaptations for each model's strengths
+#   - Portable: Same pattern → different model-optimized prompts
+#   - Self-contained: Prompts work without external context
+#   - Structured: Clear output format specifications
+# ============================================================================
+
+version: "1.0"
+last_updated: "2026-01-31"
+
+# ============================================================================
+# MODEL CAPABILITY PROFILES
+# ============================================================================
+
+model_profiles:
+  
+  claude:
+    id: claude-opus-4-5
+    strengths:
+      - "Complex reasoning and nuanced judgment"
+      - "Writing style matching and tone"
+      - "Extended thinking with reflection"
+      - "XML structure parsing"
+      - "Principle-based decisions"
+    prompt_adaptations:
+      - "Use XML tags for structure"
+      - "Leverage extended thinking blocks"
+      - "Request explicit reasoning traces"
+      - "Use artifact patterns for structured output"
+    output_format: "xml_structured"
+    max_effective_context: "200K tokens"
+    best_for:
+      - "Deep synthesis and analysis"
+      - "Complex coding and debugging"
+      - "Nuanced writing tasks"
+      - "Multi-step reasoning"
+  
+  gemini:
+    id: gemini-3-pro
+    strengths:
+      - "Broad research with many sources"
+      - "Long context window (1M+ tokens)"
+      - "Grounding with web search"
+      - "Multimodal processing"
+      - "Structured output generation"
+    prompt_adaptations:
+      - "Use structured output format (JSON schema)"
+      - "Leverage grounding for factual claims"
+      - "Request citation of sources"
+      - "Use clear section headers"
+    output_format: "json_structured"
+    max_effective_context: "1M tokens"
+    best_for:
+      - "Comprehensive research"
+      - "Multi-source synthesis"
+      - "Fact-heavy analysis"
+      - "Long document processing"
+  
+  gpt:
+    id: gpt-5-2
+    strengths:
+      - "Recent training data (most current)"
+      - "Multi-language code editing"
+      - "Chain-of-thought execution"
+      - "Broad general knowledge"
+    prompt_adaptations:
+      - "Use chain-of-thought prompting"
+      - "Request step-by-step reasoning"
+      - "Use markdown for structure"
+      - "Explicit output format instructions"
+    output_format: "markdown_structured"
+    max_effective_context: "128K tokens"
+    best_for:
+      - "Recency-sensitive research"
+      - "Polyglot code tasks"
+      - "Current events analysis"
+
+# ============================================================================
+# ROUTING DECISION TREE
+# ============================================================================
+
+model_routing:
+  description: |
+    Use this to select the optimal model for a given task.
+    Default to Claude unless specific criteria favor another model.
+  
+  decision_tree:
+    research_task:
+      needs_many_sources: "gemini"
+      needs_recency: "gpt"
+      needs_depth: "claude"
+    
+    coding_task:
+      competitive_algorithmic: "gemini"
+      multi_language_editing: "gpt"
+      debugging_complex: "claude"
+    
+    writing_task:
+      default: "claude"
+    
+    multimodal_task:
+      default: "gemini"
+    
+    unclear_advantage:
+      default: "claude"
+
+# ============================================================================
+# PROMPT TEMPLATE: MOE-EVALUATE
+# ============================================================================
+
+templates:
+
+  MOE-EVALUATE:
+    description: |
+      Multi-perspective evaluation of options using expert panel deliberation
+      and tournament ranking.
+    
+    base_template: |
+      # Multi-Expert Evaluation Analysis
+      
+      ## Context
+      {context}
+      
+      ## Your Task
+      Evaluate the following options using a multi-expert panel approach, then rank them using pairwise comparison.
+      
+      **Options to Evaluate:**
+      {options_list}
+      
+      **Evaluation Criteria:**
+      {criteria_list}
+      
+      ## Methodology
+      
+      ### Phase 1: Expert Panel Assembly
+      Assume the perspectives of {expert_count} domain experts:
+      {expert_definitions}
+      
+      For each expert, analyze ALL options from their specific lens. Stay within each expert's jurisdiction—do not opine on areas outside their domain.
+      
+      ### Phase 2: Individual Expert Evaluation
+      For each expert, evaluate each option against the criteria:
+      - Score each criterion on a 1-5 scale
+      - Provide specific rationale for each score
+      - Identify concerns specific to your expertise
+      - Note any blind spots you're aware of
+      
+      ### Phase 3: Pairwise Tournament
+      Compare options head-to-head:
+      - For each pair, determine which option is stronger overall
+      - Provide clear reasoning for each comparison
+      - Note the margin of victory (decisive, clear, slight, negligible)
+      - **CRITICAL**: For close comparisons, consider both presentation orders to avoid position bias
+      
+      ### Phase 4: Synthesis
+      Aggregate the tournament results into a final ranking:
+      - Calculate win rates for each option
+      - Identify confidence level in the ranking (High/Medium/Low)
+      - Note where expert opinions diverged significantly
+      
+      ## Output Format
+      {output_format}
+      
+      ## Quality Criteria
+      Your analysis must:
+      - [ ] Include perspective from ALL {expert_count} experts
+      - [ ] Score ALL options against ALL criteria
+      - [ ] Complete ALL pairwise comparisons
+      - [ ] Provide specific rationale for rankings
+      - [ ] Identify key trade-offs and assumptions
+      - [ ] State confidence level with justification
+      
+      ## Important Notes
+      - Experts should disagree where appropriate—unanimous agreement suggests insufficient diversity
+      - Rankings must be supported by the pairwise comparisons, not asserted
+      - Acknowledge limitations and what would change your recommendation
+    
+    model_adaptations:
+      
+      claude:
+        output_format: |
+          Structure your response using these XML sections:
+          
+          <expert_evaluations>
+            <expert name="[Expert Name]">
+              <lens>[Their perspective]</lens>
+              <option_scores>
+                <option name="[Option]">
+                  <criterion name="[Criterion]" score="[1-5]">[Rationale]</criterion>
+                  ...
+                </option>
+              </option_scores>
+              <concerns>[Key concerns from this lens]</concerns>
+              <recommendation>[This expert's preference]</recommendation>
+            </expert>
+            ...
+          </expert_evaluations>
+          
+          <tournament>
+            <comparison>
+              <pair>[Option A] vs [Option B]</pair>
+              <winner>[Winner]</winner>
+              <margin>[decisive/clear/slight/negligible]</margin>
+              <rationale>[Why]</rationale>
+            </comparison>
+            ...
+          </tournament>
+          
+          <final_ranking>
+            <rank position="1">
+              <option>[Name]</option>
+              <wins>[N]</wins>
+              <confidence>[High/Medium/Low]</confidence>
+              <rationale>[Why this is #1]</rationale>
+            </rank>
+            ...
+          </final_ranking>
+          
+          <synthesis>
+            <recommendation>[Top pick with confidence]</recommendation>
+            <key_tradeoff>[Main tradeoff the decision-maker should consider]</key_tradeoff>
+            <runner_up>[#2 and when it would be preferred]</runner_up>
+            <assumptions>[Key assumptions that could change this]</assumptions>
+          </synthesis>
+        
+        additional_instructions: |
+          Use extended thinking to reason through complex trade-offs before committing to scores.
+          If experts have conflicting views, preserve the disagreement rather than forcing consensus.
+      
+      gemini:
+        output_format: |
+          Return your analysis as a structured JSON object:
+          
+          ```json
+          {
+            "expert_evaluations": [
+              {
+                "expert_name": "string",
+                "lens": "string",
+                "option_scores": [
+                  {
+                    "option": "string",
+                    "criterion_scores": [
+                      {"criterion": "string", "score": 1-5, "rationale": "string"}
+                    ]
+                  }
+                ],
+                "concerns": ["string"],
+                "recommendation": "string"
+              }
+            ],
+            "tournament": {
+              "comparisons": [
+                {
+                  "option_a": "string",
+                  "option_b": "string",
+                  "winner": "string",
+                  "margin": "decisive|clear|slight|negligible",
+                  "rationale": "string"
+                }
+              ]
+            },
+            "final_ranking": [
+              {
+                "rank": 1,
+                "option": "string",
+                "wins": 0,
+                "confidence": "High|Medium|Low",
+                "rationale": "string"
+              }
+            ],
+            "synthesis": {
+              "recommendation": "string",
+              "key_tradeoff": "string",
+              "runner_up": "string",
+              "assumptions": ["string"]
+            }
+          }
+          ```
+        
+        additional_instructions: |
+          Ground factual claims with sources where possible.
+          Use structured output to ensure all required fields are populated.
+      
+      gpt:
+        output_format: |
+          Structure your response with these markdown sections:
+          
+          ## Expert Evaluations
+          
+          ### [Expert Name] - [Lens]
+          
+          | Option | Criterion 1 | Criterion 2 | ... | Overall |
+          |--------|-------------|-------------|-----|---------|
+          | A      | Score (rationale) | Score (rationale) | ... | X.X |
+          
+          **Key Concerns:** [Bullet points]
+          **Recommendation:** [This expert's preference]
+          
+          ---
+          
+          ## Tournament Results
+          
+          | Matchup | Winner | Margin | Rationale |
+          |---------|--------|--------|-----------|
+          | A vs B  | A      | Clear  | [Why]     |
+          
+          ---
+          
+          ## Final Ranking
+          
+          1. **[Option]** (X wins) - Confidence: High/Medium/Low
+             - Rationale: [Why this is #1]
+          
+          ---
+          
+          ## Synthesis
+          
+          **Recommendation:** [Top pick]
+          
+          **Key Trade-off:** [Main consideration]
+          
+          **Runner-up:** [#2 and when preferred]
+          
+          **Assumptions:** [What could change this]
+        
+        additional_instructions: |
+          Think step-by-step through each expert's evaluation.
+          Explicitly state your reasoning before each tournament comparison.
+    
+    parameter_placeholders:
+      context: "Domain context and constraints"
+      options_list: "Numbered list of options with descriptions"
+      criteria_list: "Weighted criteria for evaluation"
+      expert_count: "Number of experts (3-6)"
+      expert_definitions: "Expert names, lenses, and jurisdictions"
+      output_format: "Model-specific output format (substituted automatically)"
+
+  # ============================================================================
+  # PROMPT TEMPLATE: TOURNAMENT-RANK
+  # ============================================================================
+
+  TOURNAMENT-RANK:
+    description: |
+      Pure pairwise comparison ranking without expert panel overhead.
+      Efficient for ranking many options quickly.
+    
+    base_template: |
+      # Pairwise Tournament Ranking
+      
+      ## Context
+      {context}
+      
+      ## Your Task
+      Rank the following items using pairwise comparison. Compare each pair head-to-head and determine a winner.
+      
+      **Items to Rank:**
+      {items_list}
+      
+      **Comparison Criterion:**
+      {criterion}
+      
+      ## Methodology
+      
+      ### Phase 1: Pairwise Comparisons
+      For each unique pair of items:
+      1. Compare them directly against the criterion
+      2. Determine which is stronger
+      3. Note the margin of victory
+      4. Provide brief rationale
+      
+      **CRITICAL for close comparisons:**
+      - Consider both presentation orders (A vs B, then B vs A)
+      - If your preference changes based on order, declare it a tie
+      - Position bias is common—actively guard against it
+      
+      ### Phase 2: Aggregate Results
+      - Count wins for each item
+      - Identify any ties or inconsistencies
+      - Note confidence level for each ranking position
+      
+      ### Phase 3: Final Ranking
+      - Order items by win count
+      - Group items with overlapping confidence (can't reliably distinguish)
+      - State what would change the ranking
+      
+      ## Output Format
+      {output_format}
+      
+      ## Quality Criteria
+      - [ ] All {comparison_count} pairs compared
+      - [ ] Close comparisons checked for position bias
+      - [ ] Rankings supported by comparison results
+      - [ ] Confidence levels assigned to rankings
+    
+    model_adaptations:
+      claude:
+        output_format: |
+          <comparisons>
+            <pair>
+              <item_a>[Item]</item_a>
+              <item_b>[Item]</item_b>
+              <winner>[Winner or "tie"]</winner>
+              <margin>[decisive/clear/slight/negligible/tie]</margin>
+              <rationale>[Brief reason]</rationale>
+              <position_bias_check>[same_result/different_result/not_tested]</position_bias_check>
+            </pair>
+            ...
+          </comparisons>
+          
+          <ranking>
+            <position rank="1">
+              <item>[Name]</item>
+              <wins>[N]</wins>
+              <losses>[N]</losses>
+              <confidence>[High/Medium/Low]</confidence>
+            </position>
+            ...
+          </ranking>
+          
+          <notes>
+            <ties>[Any items that couldn't be distinguished]</ties>
+            <sensitivity>[What would change the ranking]</sensitivity>
+          </notes>
+      
+      gemini:
+        output_format: |
+          ```json
+          {
+            "comparisons": [
+              {
+                "item_a": "string",
+                "item_b": "string",
+                "winner": "string or null for tie",
+                "margin": "decisive|clear|slight|negligible|tie",
+                "rationale": "string",
+                "position_bias_checked": true|false
+              }
+            ],
+            "ranking": [
+              {"rank": 1, "item": "string", "wins": 0, "losses": 0, "confidence": "High|Medium|Low"}
+            ],
+            "ties": ["items that couldn't be distinguished"],
+            "sensitivity": "what would change the ranking"
+          }
+          ```
+      
+      gpt:
+        output_format: |
+          ## Comparisons
+          
+          | Pair | Winner | Margin | Rationale | Bias Check |
+          |------|--------|--------|-----------|------------|
+          | A vs B | A | Clear | [Why] | ✓ Consistent |
+          
+          ## Ranking
+          
+          | Rank | Item | Wins | Losses | Confidence |
+          |------|------|------|--------|------------|
+          | 1 | [Item] | X | Y | High |
+          
+          ## Notes
+          - **Ties:** [Items that couldn't be distinguished]
+          - **Sensitivity:** [What would change ranking]
+
+  # ============================================================================
+  # PROMPT TEMPLATE: ADVERSARIAL-VALIDATE
+  # ============================================================================
+
+  ADVERSARIAL-VALIDATE:
+    description: |
+      Red/blue team stress testing of a solution, decision, or strategy.
+    
+    base_template: |
+      # Adversarial Validation (Red/Blue Team Analysis)
+      
+      ## Context
+      {context}
+      
+      ## Subject Under Test
+      {subject}
+      
+      ## Your Task
+      Stress-test this {subject_type} through adversarial analysis. You will alternate between Red Team (attacking) and Blue Team (defending) perspectives for {iteration_count} cycles.
+      
+      ## Methodology
+      
+      ### For Each Cycle:
+      
+      **Red Team (Attack):**
+      - Identify assumptions that could be wrong
+      - Find scenarios where this fails
+      - Surface hidden dependencies or risks
+      - Challenge the strongest claims
+      - Be specific—vague attacks don't count
+      
+      **Blue Team (Defense):**
+      - Address each Red Team attack directly
+      - Either refute the attack OR acknowledge and propose mitigation
+      - Don't dismiss attacks without reasoning
+      - If an attack is valid and unmitigable, say so
+      
+      ### Termination Conditions
+      - Complete {iteration_count} cycles, OR
+      - Red Team cannot generate new substantive attacks, OR
+      - Critical unmitigable flaw discovered
+      
+      ### Final Assessment
+      After cycles complete:
+      - List all attacks and their resolution status
+      - Provide overall risk assessment
+      - Make Go/No-Go recommendation with conditions
+      
+      ## Output Format
+      {output_format}
+      
+      ## Quality Criteria
+      - [ ] Red Team attacks are substantive, not trivial
+      - [ ] Blue Team addresses each attack directly
+      - [ ] Unmitigated risks clearly identified
+      - [ ] Final assessment includes Go/No-Go recommendation
+      - [ ] Key assumptions surfaced and tested
+      
+      ## Important Notes
+      - Don't pull punches on Red Team—real stress tests find real issues
+      - Blue Team shouldn't just "spin"—acknowledge genuine weaknesses
+      - It's okay to conclude "don't proceed"—that's valuable validation
+    
+    model_adaptations:
+      claude:
+        output_format: |
+          <cycles>
+            <cycle number="1">
+              <red_team>
+                <attack id="1">
+                  <target>[What's being attacked]</target>
+                  <argument>[The attack]</argument>
+                  <severity>[critical/high/medium/low]</severity>
+                </attack>
+                ...
+              </red_team>
+              <blue_team>
+                <defense attack_id="1">
+                  <response_type>[refuted/mitigated/acknowledged]</response_type>
+                  <argument>[The defense]</argument>
+                  <residual_risk>[Any remaining risk]</residual_risk>
+                </defense>
+                ...
+              </blue_team>
+            </cycle>
+            ...
+          </cycles>
+          
+          <final_assessment>
+            <unmitigated_risks>
+              <risk severity="[level]">[Description]</risk>
+              ...
+            </unmitigated_risks>
+            <mitigated_risks>
+              <risk original_severity="[level]" residual="[level]">[Description]</risk>
+              ...
+            </mitigated_risks>
+            <refuted_attacks>
+              <attack>[Description of why it was invalid]</attack>
+              ...
+            </refuted_attacks>
+            <recommendation>
+              <decision>[Go/No-Go/Conditional-Go]</decision>
+              <conditions>[What must be true for Go]</conditions>
+              <confidence>[High/Medium/Low]</confidence>
+              <rationale>[Why this recommendation]</rationale>
+            </recommendation>
+          </final_assessment>
+      
+      gemini:
+        output_format: |
+          ```json
+          {
+            "cycles": [
+              {
+                "cycle_number": 1,
+                "red_team_attacks": [
+                  {"id": 1, "target": "string", "argument": "string", "severity": "critical|high|medium|low"}
+                ],
+                "blue_team_defenses": [
+                  {"attack_id": 1, "response_type": "refuted|mitigated|acknowledged", "argument": "string", "residual_risk": "string or null"}
+                ]
+              }
+            ],
+            "final_assessment": {
+              "unmitigated_risks": [{"severity": "string", "description": "string"}],
+              "mitigated_risks": [{"original_severity": "string", "residual_severity": "string", "description": "string"}],
+              "refuted_attacks": ["string"],
+              "recommendation": {
+                "decision": "Go|No-Go|Conditional-Go",
+                "conditions": "string",
+                "confidence": "High|Medium|Low",
+                "rationale": "string"
+              }
+            }
+          }
+          ```
+      
+      gpt:
+        output_format: |
+          ## Cycle 1
+          
+          ### 🔴 Red Team Attacks
+          
+          1. **[Target]** (Severity: High)
+             - Attack: [The argument]
+          
+          ### 🔵 Blue Team Defenses
+          
+          1. **Response to Attack 1:** [Refuted/Mitigated/Acknowledged]
+             - Defense: [The argument]
+             - Residual risk: [If any]
+          
+          ---
+          
+          ## Final Assessment
+          
+          ### Unmitigated Risks
+          - 🔴 [Critical] [Description]
+          
+          ### Mitigated Risks
+          - 🟡 [High → Low] [Description]
+          
+          ### Refuted Attacks
+          - ✓ [Description]
+          
+          ### Recommendation
+          
+          **Decision:** Go / No-Go / Conditional-Go
+          
+          **Conditions:** [What must be true]
+          
+          **Confidence:** High / Medium / Low
+          
+          **Rationale:** [Why]
+
+  # ============================================================================
+  # PROMPT TEMPLATE: RESEARCH-SYNTHESIZE
+  # ============================================================================
+
+  RESEARCH-SYNTHESIZE:
+    description: |
+      Multi-source research consolidation with conflict resolution and
+      confidence tiering.
+    
+    base_template: |
+      # Research Synthesis
+      
+      ## Context
+      {context}
+      
+      ## Research Question
+      {research_question}
+      
+      ## Sources to Synthesize
+      {sources}
+      
+      ## Your Task
+      Consolidate these sources into a unified synthesis that:
+      - Identifies where sources agree (corroboration)
+      - Surfaces where sources conflict (contradictions)
+      - Assigns confidence tiers to claims
+      - Produces actionable findings
+      
+      ## Methodology
+      
+      ### Phase 1: Source Inventory
+      For each source:
+      - Note the source type and reliability
+      - Extract key claims
+      - Identify methodology/basis for claims
+      
+      ### Phase 2: Claim Mapping
+      - List all discrete claims across sources
+      - Mark which sources support each claim
+      - Identify claims with only single-source support
+      
+      ### Phase 3: Conflict Detection
+      For each claim:
+      - Is it corroborated (multiple sources agree)?
+      - Is it contradicted (sources disagree)?
+      - Is it uncorroborated (single source)?
+      
+      ### Phase 4: Conflict Resolution
+      For conflicts:
+      - Identify the nature of disagreement (factual vs. interpretive)
+      - Apply source weighting (primary > secondary > opinion)
+      - Either resolve with reasoning OR preserve as genuine uncertainty
+      
+      ### Phase 5: Confidence Tiering
+      Assign confidence to each finding:
+      - **HIGH**: Multiple primary sources agree
+      - **MEDIUM**: Single primary or multiple secondary sources
+      - **LOW**: Single secondary, conflicted, or uncertain
+      
+      ### Phase 6: Unified Synthesis
+      - Produce coherent narrative integrating all findings
+      - Lead with high-confidence findings
+      - Clearly mark uncertainties
+      - Note what's NOT covered
+      
+      ## Output Format
+      {output_format}
+      
+      ## Quality Criteria
+      - [ ] All sources represented in synthesis
+      - [ ] Conflicts explicitly identified and addressed
+      - [ ] Confidence tiers assigned to all findings
+      - [ ] Gaps and limitations acknowledged
+      - [ ] Actionable conclusions stated
+    
+    model_adaptations:
+      claude:
+        output_format: |
+          <source_inventory>
+            <source id="1">
+              <name>[Source name]</name>
+              <type>[primary/secondary/expert_opinion]</type>
+              <reliability>[high/medium/low]</reliability>
+              <key_claims>
+                <claim id="1a">[Claim text]</claim>
+                ...
+              </key_claims>
+            </source>
+            ...
+          </source_inventory>
+          
+          <claim_mapping>
+            <claim id="C1">
+              <statement>[The claim]</statement>
+              <supported_by>[Source IDs]</supported_by>
+              <corroboration_status>[corroborated/contradicted/uncorroborated]</corroboration_status>
+            </claim>
+            ...
+          </claim_mapping>
+          
+          <conflicts>
+            <conflict id="1">
+              <claim_a source="[ID]">[Claim]</claim_a>
+              <claim_b source="[ID]">[Conflicting claim]</claim_b>
+              <resolution_type>[resolved/preserved_uncertainty]</resolution_type>
+              <resolution>[How resolved or why preserved]</resolution>
+            </conflict>
+            ...
+          </conflicts>
+          
+          <findings>
+            <finding confidence="HIGH">
+              <statement>[Finding]</statement>
+              <supporting_sources>[IDs]</supporting_sources>
+              <implications>[So what?]</implications>
+            </finding>
+            ...
+          </findings>
+          
+          <synthesis>
+            <summary>[Unified narrative]</summary>
+            <gaps>[What's not covered]</gaps>
+            <actionable_conclusions>
+              <conclusion>[What to do with this]</conclusion>
+              ...
+            </actionable_conclusions>
+          </synthesis>
+      
+      gemini:
+        output_format: |
+          ```json
+          {
+            "source_inventory": [
+              {"id": "string", "name": "string", "type": "primary|secondary|expert_opinion", "reliability": "high|medium|low", "key_claims": ["string"]}
+            ],
+            "claim_mapping": [
+              {"claim_id": "string", "statement": "string", "supported_by": ["source_ids"], "corroboration_status": "corroborated|contradicted|uncorroborated"}
+            ],
+            "conflicts": [
+              {"conflict_id": "string", "claim_a": {"source": "string", "statement": "string"}, "claim_b": {"source": "string", "statement": "string"}, "resolution_type": "resolved|preserved_uncertainty", "resolution": "string"}
+            ],
+            "findings": [
+              {"confidence": "HIGH|MEDIUM|LOW", "statement": "string", "supporting_sources": ["string"], "implications": "string"}
+            ],
+            "synthesis": {
+              "summary": "string",
+              "gaps": ["string"],
+              "actionable_conclusions": ["string"]
+            }
+          }
+          ```
+        
+        additional_instructions: |
+          Use web search grounding to verify factual claims where possible.
+          Cite sources for each finding.
+      
+      gpt:
+        output_format: |
+          ## Source Inventory
+          
+          | ID | Source | Type | Reliability | Key Claims |
+          |----|--------|------|-------------|------------|
+          | 1 | [Name] | Primary | High | [Claims] |
+          
+          ## Claim Mapping
+          
+          | Claim | Supported By | Status |
+          |-------|--------------|--------|
+          | [Claim] | Sources 1, 2 | ✓ Corroborated |
+          | [Claim] | Source 3 only | ⚠ Uncorroborated |
+          | [Claim] | Sources 1 vs 2 | ❌ Contradicted |
+          
+          ## Conflicts & Resolution
+          
+          ### Conflict 1: [Topic]
+          - **Source A says:** [Claim]
+          - **Source B says:** [Conflicting claim]
+          - **Resolution:** [Resolved/Preserved] — [Reasoning]
+          
+          ## Findings by Confidence
+          
+          ### 🟢 HIGH Confidence
+          - [Finding] — Sources: [IDs]
+            - *Implication:* [So what]
+          
+          ### 🟡 MEDIUM Confidence
+          - [Finding]
+          
+          ### 🔴 LOW Confidence
+          - [Finding]
+          
+          ## Synthesis
+          
+          **Summary:** [Unified narrative]
+          
+          **Gaps:** [What's not covered]
+          
+          **Actionable Conclusions:**
+          1. [What to do]
+
+  # ============================================================================
+  # PROMPT TEMPLATE: GAP-AUDIT
+  # ============================================================================
+
+  GAP-AUDIT:
+    description: |
+      Systematic completeness and compliance checking against a reference standard.
+    
+    base_template: |
+      # Gap Audit
+      
+      ## Context
+      {context}
+      
+      ## Document Under Audit
+      {document}
+      
+      ## Reference Standard
+      {reference_standard}
+      
+      ## Your Task
+      Systematically audit the document against the reference standard, identifying gaps, inconsistencies, and compliance issues.
+      
+      ## Methodology
+      
+      ### Phase 1: Reference Enumeration
+      List all criteria from the reference standard that must be checked.
+      
+      ### Phase 2: Item-by-Item Verification
+      For each criterion:
+      - **Present & Compliant**: Criterion is addressed and meets standard
+      - **Present & Non-Compliant**: Criterion is addressed but doesn't meet standard
+      - **Partially Addressed**: Some but not all aspects covered
+      - **Missing**: Criterion not addressed
+      
+      ### Phase 3: Gap Classification
+      For each gap found:
+      - **Severity**: Critical / High / Medium / Low
+      - **Category**: Missing / Incomplete / Inconsistent / Ambiguous / Incorrect
+      - **Location**: Where in the document
+      - **Remediation**: What needs to change
+      
+      ### Phase 4: Summary
+      - Total gaps by severity
+      - Overall compliance assessment
+      - Blocking issues (if any)
+      - Priority remediation order
+      
+      ## Output Format
+      {output_format}
+      
+      ## Quality Criteria
+      - [ ] All reference criteria checked
+      - [ ] Each gap has severity classification
+      - [ ] Remediation provided for each gap
+      - [ ] Overall assessment provided
+    
+    model_adaptations:
+      claude:
+        output_format: |
+          <reference_checklist>
+            <criterion id="1">
+              <requirement>[What's required]</requirement>
+              <status>[compliant/non_compliant/partial/missing]</status>
+              <evidence>[Where/how addressed, or "not found"]</evidence>
+            </criterion>
+            ...
+          </reference_checklist>
+          
+          <gaps>
+            <gap id="G1">
+              <criterion_id>1</criterion_id>
+              <severity>[critical/high/medium/low]</severity>
+              <category>[missing/incomplete/inconsistent/ambiguous/incorrect]</category>
+              <location>[Where in document]</location>
+              <description>[What's wrong]</description>
+              <remediation>[What to fix]</remediation>
+            </gap>
+            ...
+          </gaps>
+          
+          <summary>
+            <total_criteria>[N]</total_criteria>
+            <compliant>[N]</compliant>
+            <gaps_found>[N]</gaps_found>
+            <by_severity>
+              <critical>[N]</critical>
+              <high>[N]</high>
+              <medium>[N]</medium>
+              <low>[N]</low>
+            </by_severity>
+            <blocking_issues>[List or "None"]</blocking_issues>
+            <overall_assessment>[Pass/Fail/Conditional]</overall_assessment>
+            <priority_remediation>
+              <item priority="1">[Gap ID and brief description]</item>
+              ...
+            </priority_remediation>
+          </summary>
+      
+      gemini:
+        output_format: |
+          ```json
+          {
+            "reference_checklist": [
+              {"criterion_id": "string", "requirement": "string", "status": "compliant|non_compliant|partial|missing", "evidence": "string"}
+            ],
+            "gaps": [
+              {"gap_id": "string", "criterion_id": "string", "severity": "critical|high|medium|low", "category": "missing|incomplete|inconsistent|ambiguous|incorrect", "location": "string", "description": "string", "remediation": "string"}
+            ],
+            "summary": {
+              "total_criteria": 0,
+              "compliant": 0,
+              "gaps_found": 0,
+              "by_severity": {"critical": 0, "high": 0, "medium": 0, "low": 0},
+              "blocking_issues": ["string or empty"],
+              "overall_assessment": "Pass|Fail|Conditional",
+              "priority_remediation": [{"priority": 1, "gap_id": "string", "description": "string"}]
+            }
+          }
+          ```
+      
+      gpt:
+        output_format: |
+          ## Reference Checklist
+          
+          | # | Requirement | Status | Evidence |
+          |---|-------------|--------|----------|
+          | 1 | [Requirement] | ✓ Compliant | [Where addressed] |
+          | 2 | [Requirement] | ❌ Missing | Not found |
+          
+          ## Gaps Found
+          
+          ### 🔴 Critical
+          
+          **G1: [Brief title]**
+          - Criterion: #[N]
+          - Location: [Where]
+          - Issue: [Description]
+          - Fix: [Remediation]
+          
+          ### 🟠 High
+          [...]
+          
+          ## Summary
+          
+          | Metric | Value |
+          |--------|-------|
+          | Total Criteria | X |
+          | Compliant | Y |
+          | Gaps Found | Z |
+          
+          **By Severity:** Critical: X, High: Y, Medium: Z, Low: W
+          
+          **Blocking Issues:** [List or None]
+          
+          **Overall Assessment:** Pass / Fail / Conditional
+          
+          **Priority Remediation:**
+          1. [Gap ID] - [Description]
+
+# ============================================================================
+# CONTEXT HANDOFF PROTOCOLS
+# ============================================================================
+
+handoff_protocols:
+  description: |
+    Protocols for safely passing context between models in multi-model workflows.
+  
+  narrative_casting:
+    description: |
+      When transferring context from one model to another, use narrative casting
+      to prevent role confusion and context pollution.
+    
+    template: |
+      [For context]: Research conducted via {source_model} found:
+      
+      {summary_of_findings}
+      
+      ---
+      
+      Your task is to {new_task}. Build on these findings but form your own conclusions.
+      Do not claim the prior analysis as your own work.
+    
+    rules:
+      - "Never paste full conversation history"
+      - "Summarize findings, don't quote verbatim"
+      - "Clearly mark what came from where"
+      - "Give new model permission to disagree"
+  
+  context_compaction:
+    description: |
+      When context grows beyond a threshold, compact it to preserve signal.
+    
+    threshold: "8K tokens from prior exchanges"
+    
+    preserve:
+      - "Key findings and decisions"
+      - "Constraints and requirements"
+      - "Open questions"
+    
+    discard:
+      - "Reasoning traces"
+      - "Exploratory tangents"
+      - "Superseded conclusions"
+      - "Formatting artifacts"
+    
+    template: |
+      ## Prior Analysis Summary
+      
+      **Key Findings:**
+      {findings}
+      
+      **Decisions Made:**
+      {decisions}
+      
+      **Constraints:**
+      {constraints}
+      
+      **Open Questions:**
+      {questions}
+      
+      ---
+      
+      [New task begins below]
+  
+  anti_patterns:
+    - pattern: "Full history transfer"
+      example: "Here's our full conversation history with Gemini: [10,000 tokens]"
+      problem: "Context explosion, speaker confusion, signal buried in noise"
+      fix: "Use context compaction and narrative casting"
+    
+    - pattern: "Unmarked provenance"
+      example: "The analysis shows that..." (unclear who did analysis)
+      problem: "New model may claim prior work or reject valid findings"
+      fix: "Always mark source: '[Gemini research found]: ...'"
+    
+    - pattern: "Role contamination"
+      example: "Continue as the previous assistant..."
+      problem: "Model tries to role-play as other model"
+      fix: "Fresh role assignment with context handoff"
+
+# ============================================================================
+# PROMPT GENERATION WORKFLOW
+# ============================================================================
+
+generation_workflow:
+  description: |
+    How the Cognitive Process Architect generates prompts from patterns.
+  
+  steps:
+    - step: 1
+      name: "Pattern Selection"
+      action: "Match task to pattern from skill-patterns.yaml"
+    
+    - step: 2
+      name: "Model Selection"
+      action: "Determine target model using routing decision tree"
+    
+    - step: 3
+      name: "Parameter Binding"
+      action: "Substitute placeholders with user-provided values"
+    
+    - step: 4
+      name: "Model Adaptation"
+      action: "Apply model-specific output_format and additional_instructions"
+    
+    - step: 5
+      name: "Handoff Framing"
+      action: "If multi-model workflow, wrap in narrative casting template"
+    
+    - step: 6
+      name: "Validation"
+      action: "Verify all placeholders filled, quality criteria present"
+  
+  output_structure: |
+    # Generated Prompt: {pattern_name} for {target_model}
+    
+    ---
+    
+    {complete_prompt_with_substitutions}
+    
+    ---
+    
+    ## Generation Metadata
+    - Pattern: {pattern_name}
+    - Target Model: {target_model}
+    - Parameters: {parameter_summary}
+    - Generated: {timestamp}
+
+# ============================================================================
+# VERSION HISTORY
+# ============================================================================
+
+version_history:
+  - version: "1.0"
+    date: "2026-01-31"
+    changes:
+      - "Initial release with 5 pattern templates"
+      - "Model profiles for Claude, Gemini, GPT"
+      - "Model-specific output format adaptations"
+      - "Handoff protocols for multi-model workflows"
+      - "Context compaction and narrative casting"

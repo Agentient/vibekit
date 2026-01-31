@@ -1,0 +1,23 @@
+{
+  "name": "skills-factory",
+  "version": "1.0.0",
+  "description": "AI skills factory with meta-skill for generating domain-specific skills using advanced reasoning techniques, expert panels, and standardized schemas",
+  "author": "Robin (Agentient)",
+  "homepage": "https://github.com/agentient/skills-factory",
+  "skills": {
+    "cognitive-process-architect": "skills/meta/cognitive-process-architect",
+    "expert-panel-deliberation": "skills/evaluation/expert-panel-deliberation",
+    "generate-ideas": "skills/evaluation/generate-ideas",
+    "create-research-brief": "skills/research/create-research-brief",
+    "consolidate-research": "skills/research/consolidate-research",
+    "improve-prompt": "skills/prompts/improve-prompt",
+    "create-documentation": "skills/documentation/create-documentation"
+  },
+  "commands": {
+    "generate-skill": "commands/generate-skill.md",
+    "run-expert-panel": "commands/run-expert-panel.md"
+  },
+  "agents": {
+    "skill-validator": "agents/skill-validator.md"
+  }
+}
