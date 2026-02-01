@@ -1,0 +1,41 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/validate-xml-output.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Analyze the conversation to determine if a research artifact was produced. Look for: PROBLEM-STATEMENT (suggest /research-brief), research-brief.xml (suggest user execute prompts then /consolidate-research), consolidated-report.xml (suggest /compare-options for strategic decisions). Respond with {\"ok\": true} if no suggestion needed, or {\"ok\": false, \"reason\": \"Suggested next step: [suggestion]\"} if workflow should continue.",
+            "timeout": 15
+          },
+          {
+            "type": "prompt",
+            "prompt": "Check if any research output was produced with confidence below 0.85. Look for confidence scores, epistemic labels showing SPECULATIVE or UNKNOWN, or explicit low-confidence markers. Respond with {\"ok\": true} if confidence is acceptable, or {\"ok\": false, \"reason\": \"Low confidence detected: [details]. Consider continuing research or flagging findings.\"} if confidence is concerning.",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/load-context.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

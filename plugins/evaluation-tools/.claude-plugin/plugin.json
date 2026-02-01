@@ -1,0 +1,10 @@
+{
+  "name": "evaluation-tools",
+  "version": "1.0.0",
+  "description": "Multi-expert evaluation patterns for structured analysis, deliberation, and decision-making",
+  "author": {
+    "name": "Agentient"
+  },
+  "license": "MIT",
+  "keywords": ["evaluation", "expert-panel", "deliberation", "database-schema", "scoring"]
+}

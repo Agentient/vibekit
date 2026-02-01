@@ -1,0 +1,10 @@
+{
+  "name": "meta-tools",
+  "version": "1.0.0",
+  "description": "Generate domain-specific skills using advanced reasoning techniques and templates",
+  "author": {
+    "name": "Agentient"
+  },
+  "license": "MIT",
+  "keywords": ["skill-generation", "meta", "templates", "reasoning-techniques"]
+}

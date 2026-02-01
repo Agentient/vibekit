@@ -113,6 +113,37 @@ Generate one of:
 - Self-contained instructions
 - No skill dependencies
 
+**→ Proceed to Phase 5 to save the skill in the correct location.**
+
+### Phase 5: Skill Placement
+
+Generated skills MUST be placed in the correct plugin directory for marketplace visibility:
+
+1. **Determine target plugin based on skill type:**
+
+   | Skill Type | Target Plugin |
+   |------------|---------------|
+   | Evaluation/Comparison | `evaluation-tools` |
+   | Research/Discovery | `research-tools` |
+   | Documentation | `documentation-tools` |
+   | Prompt optimization | `prompt-tools` |
+   | Skill generation/Meta | `meta-tools` |
+
+2. **Create the skill directory structure:**
+   ```
+   plugins/<target-plugin>/skills/<skill-name>/
+   ├── SKILL.md              ← Main skill definition (required)
+   ├── references/           ← Supporting reference docs (optional)
+   └── templates/            ← Output templates (optional)
+   ```
+
+3. **File naming conventions:**
+   - Skill directory: kebab-case (e.g., `architecture-evaluator`)
+   - SKILL.md: Required, exact filename
+   - References: descriptive kebab-case (e.g., `scoring-criteria.md`)
+
+**Important:** Skills saved outside `plugins/<plugin>/skills/` will NOT appear in the marketplace.
+
 ## Output Templates
 
 ### Skill Output Template
@@ -169,6 +200,7 @@ Before completing skill generation:
 - [ ] Output contract specified (from artifact-contracts)
 - [ ] Triggers are specific and actionable
 - [ ] Description includes numbered use cases
+- [ ] Target plugin identified and skill saved to `plugins/<plugin>/skills/<skill-name>/`
 
 ## Examples
 

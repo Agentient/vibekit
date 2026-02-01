@@ -1,80 +1,105 @@
-# Skills Factory
+# Skills Factory Marketplace
 
-AI skills factory with advanced reasoning techniques for research, evaluation, and documentation.
+AI skills marketplace with advanced reasoning techniques for research, evaluation, and documentation.
 
-## Quick Reference
+## Installation
 
-- **Generate a skill:** Use advanced-skill-creator skill or `/generate-skill` command
-- **Run expert panel:** Use expert-panel-deliberation skill or `/run-expert-panel` command
-- **Research workflow:** Use research-interviewer → create-research-brief → consolidate-research skills
+```bash
+# Add the marketplace
+/plugin marketplace add owner/skills-factory
+
+# Install individual plugins
+/plugin install research-tools@skills-factory
+/plugin install evaluation-tools@skills-factory
+/plugin install documentation-tools@skills-factory
+/plugin install prompt-tools@skills-factory
+/plugin install meta-tools@skills-factory
+```
+
+## Available Plugins
+
+### research-tools
+Research workflow from knowledge elicitation to consolidated findings.
+
+**Skills:**
+- `/research-tools:research-interviewer` — Systematic knowledge elicitation with epistemic tracking
+- `/research-tools:create-research-brief` — Multi-LLM research design and consolidation
+- `/research-tools:consolidate-research` — Synthesize multi-source findings
+
+**Workflow:**
+```
+research-interviewer → create-research-brief → consolidate-research
+     (elicit)              (design)              (synthesize)
+```
+
+### evaluation-tools
+Multi-expert evaluation patterns for structured analysis.
+
+**Skills:**
+- `/evaluation-tools:expert-panel-deliberation` — Multi-expert evaluation and consensus
+- `/evaluation-tools:database-schema-evaluator` — 5-perspective database schema analysis
+- `/evaluation-tools:generate-ideas` — Structured ideation with tournament ranking
+
+**Commands:**
+- `/evaluation-tools:run-expert-panel` — Quick expert panel invocation
+
+### documentation-tools
+Diátaxis-aligned documentation generation.
+
+**Skills:**
+- `/documentation-tools:create-documentation` — Reader-centered docs with cognitive load management
+  - 4 document types: Tutorial, How-To, Explanation, Reference
+  - Reader personas: Anxious Novice, Developer, Scanning Executive
+
+### prompt-tools
+Prompt engineering and optimization.
+
+**Skills:**
+- `/prompt-tools:improve-prompt` — Optimize prompts for Claude
+
+### meta-tools
+Skills for creating skills.
+
+**Skills:**
+- `/meta-tools:advanced-skill-creator` — Generate domain-specific skills from templates
+
+**Commands:**
+- `/meta-tools:generate-skill` — Create new skill from templates
 
 ## Core Libraries
 
-Located in `core/`:
+Located in `core/` (shared across all plugins via symlinks):
 - `technique-taxonomy.yaml` — 200+ reasoning techniques
 - `artifact-contracts.yaml` — Standardized I/O schemas
 - `scoring-rubrics.yaml` — Evaluation algorithms
 - `skill-patterns.yaml` — Workflow patterns
 
-## Available Skills
+## Repository Structure
 
-### Meta
-- **advanced-skill-creator** — Generate domain-specific skills from templates
-
-### Evaluation
-- **expert-panel-deliberation** — Multi-expert evaluation and consensus
-- **database-schema-evaluator** — Multi-expert database schema analysis (5 perspectives: Data Architect, Performance Engineer, Data Integrity Guardian, Evolution Strategist, Operations Specialist)
-- **generate-ideas** — Structured ideation with tournament ranking
-
-### Research
-
-#### Workflow
 ```
-┌─────────────────────┐
-│research-interviewer │  Elicit knowledge and requirements
-└──────────┬──────────┘
-           │ PROBLEM-STATEMENT
-           ▼
-┌─────────────────────┐
-│create-research-brief│  Design multi-LLM research strategy
-│     (Phase 1)       │
-└──────────┬──────────┘
-           │ RESEARCH-BRIEF
-           ▼
-┌─────────────────────┐
-│ consolidate-research│  Synthesize multi-source findings
-└─────────────────────┘
+skills-factory/
+├── .claude-plugin/
+│   └── marketplace.json      ← Marketplace catalog
+├── plugins/
+│   ├── research-tools/       ← Research workflow plugin
+│   ├── evaluation-tools/     ← Evaluation patterns plugin
+│   ├── documentation-tools/  ← Documentation plugin
+│   ├── prompt-tools/         ← Prompt optimization plugin
+│   └── meta-tools/           ← Skill generation plugin
+├── core/                     ← Shared libraries
+└── skills/                   ← Development staging area
 ```
 
-- **research-interviewer** (v2.0) — Systematic knowledge elicitation
-  - 6-phase workflow: establish → map → elicit → track → validate → output
-  - Epistemic confidence tracking with 5-tier labeling
-  - MECE coverage verification and gap detection
-  - Bias protection: frame equivalence, disconfirmation hunt, assumption surfacing
-  - Outputs: PROBLEM-STATEMENT, KNOWLEDGE-CORPUS, REQUIREMENTS
-  - Domain references: product, architecture, research, requirements, custom
-- **create-research-brief** (v2.0) — Multi-model research design and consolidation
-  - Phase 1: MECE decomposition, risk assessment, model-specific prompts
-  - Phase 2: Evidence tribunal, uncertainty decomposition, gap analysis
-  - Features: Multi-hypothesis framing, expert panel integration, decision trees, kill criteria
-- **consolidate-research** — Synthesize multi-source findings
+## For Developers
 
-### Documentation
-- **create-documentation** — Diátaxis-aligned documentation with cognitive load management
-  - 4 document types: Tutorial, How-To, Explanation, Reference
-  - Reader personas: Anxious Novice, Developer, Scanning Executive
-  - Multi-layer validation (structural, content, reader experience)
+### Local Testing
+```bash
+/plugin marketplace add ./path/to/skills-factory
+/plugin install research-tools@skills-factory
+```
 
-### Prompts
-- **improve-prompt** — Optimize prompts for Claude
-
-## Commands
-
-- `/generate-skill` — Create new skill from templates
-- `/run-expert-panel` — Quick expert panel invocation
-
-## Working With This Repo
-
-1. Skills auto-activate based on context
-2. Use `/skill-name` for explicit invocation
-3. Core libraries loaded on-demand via `@core/filename.yaml`
+### Creating New Skills
+1. Create skill directory in appropriate plugin under `plugins/<plugin>/skills/`
+2. Add `SKILL.md` with frontmatter (name, description)
+3. Add supporting `references/` and `templates/` as needed
+4. Test with `/plugin-name:skill-name`

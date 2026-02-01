@@ -1,36 +1,53 @@
 {
-  "name": "agentient-skills-marketplace",
-  "description": "Advanced AI skills for research, evaluation, documentation, and requirements engineering",
+  "name": "skills-factory",
   "owner": {
-    "name": "Agentient",
-    "url": "https://agentient.com"
+    "name": "Agentient"
+  },
+  "metadata": {
+    "description": "AI skills factory with advanced reasoning techniques for research, evaluation, and documentation",
+    "version": "1.0.0",
+    "pluginRoot": "./plugins"
   },
   "plugins": [
     {
-      "name": "skills-factory",
-      "description": "Core meta-skill and foundational capabilities",
-      "source": {
-        "type": "github",
-        "repo": "agentient/skills-factory"
-      }
+      "name": "research-tools",
+      "source": "./plugins/research-tools",
+      "description": "Research workflow: systematic interviewing → research brief design → multi-source consolidation",
+      "version": "1.0.0",
+      "category": "research",
+      "tags": ["research", "interviewing", "MECE", "knowledge-elicitation", "epistemic-tracking"]
     },
     {
-      "name": "assessment-suite",
-      "description": "AI transformation assessment toolkit",
-      "source": {
-        "type": "github",
-        "repo": "agentient/skills-factory",
-        "path": "plugins/assessment-suite"
-      }
+      "name": "evaluation-tools",
+      "source": "./plugins/evaluation-tools",
+      "description": "Multi-expert evaluation and deliberation patterns for structured analysis",
+      "version": "1.0.0",
+      "category": "evaluation",
+      "tags": ["evaluation", "expert-panel", "deliberation", "database-schema", "scoring"]
     },
     {
-      "name": "career-suite",
-      "description": "Career development and job fit tools",
-      "source": {
-        "type": "github",
-        "repo": "agentient/skills-factory",
-        "path": "plugins/career-suite"
-      }
+      "name": "documentation-tools",
+      "source": "./plugins/documentation-tools",
+      "description": "Diátaxis-aligned documentation with cognitive load management",
+      "version": "1.0.0",
+      "category": "documentation",
+      "tags": ["documentation", "diataxis", "tutorials", "how-to", "cognitive-load"]
+    },
+    {
+      "name": "prompt-tools",
+      "source": "./plugins/prompt-tools",
+      "description": "Prompt engineering and optimization for Claude",
+      "version": "1.0.0",
+      "category": "prompts",
+      "tags": ["prompts", "optimization", "prompt-engineering"]
+    },
+    {
+      "name": "meta-tools",
+      "source": "./plugins/meta-tools",
+      "description": "Generate domain-specific skills using advanced reasoning techniques",
+      "version": "1.0.0",
+      "category": "meta",
+      "tags": ["skill-generation", "meta", "templates", "reasoning-techniques"]
     }
   ]
 }

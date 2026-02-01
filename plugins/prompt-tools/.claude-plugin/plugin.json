@@ -1,0 +1,10 @@
+{
+  "name": "prompt-tools",
+  "version": "1.0.0",
+  "description": "Prompt engineering and optimization tools for Claude",
+  "author": {
+    "name": "Agentient"
+  },
+  "license": "MIT",
+  "keywords": ["prompts", "optimization", "prompt-engineering"]
+}

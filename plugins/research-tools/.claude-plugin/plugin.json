@@ -1,0 +1,10 @@
+{
+  "name": "research-tools",
+  "version": "1.0.0",
+  "description": "Research workflow tools: systematic interviewing, research brief design, and multi-source consolidation",
+  "author": {
+    "name": "Agentient"
+  },
+  "license": "MIT",
+  "keywords": ["research", "interviewing", "knowledge-elicitation", "MECE", "epistemic-tracking"]
+}

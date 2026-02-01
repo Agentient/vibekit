@@ -1,0 +1,10 @@
+{
+  "name": "documentation-tools",
+  "version": "1.0.0",
+  "description": "Diátaxis-aligned documentation generation with cognitive load management and reader persona adaptation",
+  "author": {
+    "name": "Agentient"
+  },
+  "license": "MIT",
+  "keywords": ["documentation", "diataxis", "tutorials", "how-to", "cognitive-load"]
+}
