@@ -1,0 +1,40 @@
+{
+  "name": "agentient-mcp-tools",
+  "version": "1.0.0",
+  "description": "Model Context Protocol (MCP) server integration plugin providing schema-first tool development with Pydantic V2, Python 3.13 asyncio patterns, and JSON-RPC 2.0 compliance.",
+  "confidence": 99,
+  "category": "Backend",
+  "agents": [
+    "mcp-developer-agent"
+  ],
+  "commands": [
+    "create-mcp-server",
+    "add-tool",
+    "add-resource",
+    "test-mcp"
+  ],
+  "skills": [
+    "mcp-protocol-fundamentals",
+    "mcp-server-scaffolding-asyncio",
+    "mcp-pydantic-tool-definition",
+    "mcp-resource-exposure-patterns",
+    "mcp-advanced-tool-patterns",
+    "mcp-protocol-compliance-testing"
+  ],
+  "dependencies": {
+    "required": [
+      "agentient-python-core"
+    ],
+    "optional": []
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "json-rpc",
+    "pydantic",
+    "asyncio",
+    "tools",
+    "resources",
+    "schema-first"
+  ]
+}

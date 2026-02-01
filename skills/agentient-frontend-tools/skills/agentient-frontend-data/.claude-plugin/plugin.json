@@ -1,0 +1,34 @@
+{
+  "name": "agentient-frontend-data",
+  "version": "1.0.0",
+  "description": "Firebase integration, Firestore data modeling, type-safe data access with Zod, authentication patterns, and security rules for Next.js 14+ applications.",
+  "target_modes": ["data_modeler", "firebase_dev", "typescript_dev"],
+  "agents": [
+    "agents/data-modeler-agent.md",
+    "agents/firebase-integration-agent.md"
+  ],
+  "commands": [
+    "commands/model-collection.md",
+    "commands/setup-firebase.md",
+    "commands/create-auth-flow.md",
+    "commands/generate-security-rules.md"
+  ],
+  "hooks": "hooks/hooks.json",
+  "configuration": {
+    "QUALITY_THRESHOLD": "97",
+    "PLAN_MODE_DEFAULT": "true",
+    "FIREBASE_ADMIN_SERVER_ONLY": "true",
+    "ZOD_CONVERTER_REQUIRED": "true",
+    "ERROR_HANDLING_MANDATORY": "true",
+    "SECURITY_RULES_REQUIRED": "true"
+  },
+  "dependencies": {
+    "required": ["agentient-frontend-foundation"],
+    "optional": ["agentient-frontend-state-forms", "agentient-frontend-bff", "agentient-security"]
+  },
+  "metadata": {
+    "author": "Agentient Labs",
+    "tags": ["firebase", "firestore", "zod", "authentication", "security-rules", "data-modeling"],
+    "confidence_level": "97%"
+  }
+}

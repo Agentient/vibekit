@@ -1,0 +1,8 @@
+{
+  "name": "security-tools",
+  "version": "0.1.0",
+  "description": "[STUB] Security audit and vulnerability detection covering OWASP Top 10, authentication, secure headers, and privacy compliance",
+  "author": { "name": "Agentient" },
+  "license": "MIT",
+  "keywords": ["security", "owasp", "authentication", "privacy", "gcp"]
+}

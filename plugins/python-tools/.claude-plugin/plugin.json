@@ -1,0 +1,10 @@
+{
+  "name": "python-tools",
+  "version": "1.0.0",
+  "description": "Python 3.13 development patterns with Pydantic V2, async/await, pytest testing, and type hints best practices",
+  "author": {
+    "name": "Agentient"
+  },
+  "license": "MIT",
+  "keywords": ["python", "pydantic", "pytest", "async", "type-hints", "mypy", "python-3.13"]
+}

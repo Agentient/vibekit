@@ -1,0 +1,8 @@
+{
+  "name": "quality-tools",
+  "version": "1.0.0",
+  "description": "Testing, code review, linting, and coverage analysis patterns",
+  "author": { "name": "Agentient" },
+  "license": "MIT",
+  "keywords": ["testing", "code-review", "linting", "coverage", "quality"]
+}

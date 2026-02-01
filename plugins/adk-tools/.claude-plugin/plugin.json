@@ -1,0 +1,8 @@
+{
+  "name": "adk-tools",
+  "version": "1.0.0",
+  "description": "Google Agent Development Kit (ADK) patterns for building AI agents with Vertex AI",
+  "author": { "name": "Agentient" },
+  "license": "MIT",
+  "keywords": ["adk", "vertex-ai", "agents", "rag", "orchestration", "gemini"]
+}

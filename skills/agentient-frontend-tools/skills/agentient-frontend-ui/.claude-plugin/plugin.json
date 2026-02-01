@@ -1,0 +1,36 @@
+{
+  "name": "agentient-frontend-ui",
+  "version": "1.0.0",
+  "description": "Modern, accessible UI component development with shadcn/ui, Tailwind CSS, Framer Motion, and React Server Components for Next.js 14+.",
+  "target_modes": ["ui_designer", "react_dev", "typescript_dev"],
+  "agents": [
+    "agents/ui-designer-agent.md",
+    "agents/component-builder-agent.md"
+  ],
+  "commands": [
+    "commands/add-component.md",
+    "commands/create-variant.md",
+    "commands/style-responsive.md",
+    "commands/add-animation.md",
+    "commands/make-accessible.md"
+  ],
+  "hooks": "hooks/hooks.json",
+  "configuration": {
+    "QUALITY_THRESHOLD": "97",
+    "PLAN_MODE_DEFAULT": "true",
+    "RSC_DEFAULT": "true",
+    "MOBILE_FIRST_RESPONSIVE": "true",
+    "SHADCN_CLI_ONLY": "true",
+    "CLIENT_DIRECTIVE_MINIMAL": "true",
+    "ARIA_REQUIRED_INTERACTIVE": "true"
+  },
+  "dependencies": {
+    "required": ["agentient-frontend-foundation"],
+    "optional": ["agentient-security"]
+  },
+  "metadata": {
+    "author": "Agentient Labs",
+    "tags": ["shadcn", "tailwind", "framer-motion", "ui", "components", "accessibility", "rsc"],
+    "confidence_level": "97%"
+  }
+}

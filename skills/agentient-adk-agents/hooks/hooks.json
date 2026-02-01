@@ -1,0 +1,13 @@
+{
+  "PostToolUse": [
+    {
+      "matcher": "Write|Edit",
+      "hooks": [
+        {
+          "type": "prompt",
+          "prompt": "After writing or editing code, verify the following ADK quality standards:\n\n1. **Pydantic Strict Mode**: If the file contains Pydantic BaseModel definitions for ADK tool schemas, verify they use `model_config = ConfigDict(strict=True)`. This is MANDATORY for all tool schemas to prevent silent type coercion.\n\n2. **Async Tool Functions**: If the file contains ADK tool function definitions that perform I/O operations (API calls, file access, database queries), verify they are defined as `async def` with proper error handling.\n\n3. **XML Prompt Structure**: If the file contains agent system prompts, verify they use XML tags for sections (<role>, <instructions>, <tools>, <output_format>, <examples>, <constraints>).\n\n4. **Function Descriptions**: If the file contains FunctionDeclaration objects, verify the `description` field is detailed and specific (not vague like 'Gets data').\n\nIf any of these standards are not met, provide specific guidance on how to fix the issues. These standards are critical for production-grade ADK agents."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "name": "agentient-rag-engine",
+  "version": "1.0.0",
+  "description": "Production-grade Retrieval-Augmented Generation (RAG) pipeline plugin for Google Cloud Vertex AI RAG Engine, providing schema-first corpus management, intelligent document ingestion with asymmetric embeddings, and citation-mandatory retrieval.",
+  "confidence": 99,
+  "category": "Backend",
+  "agents": [
+    "rag-engineer-agent"
+  ],
+  "commands": [
+    "create-corpus",
+    "ingest-documents",
+    "query-rag",
+    "optimize-retrieval"
+  ],
+  "skills": [
+    "rag-corpus-lifecycle-management",
+    "rag-intelligent-document-ingestion",
+    "rag-embedding-strategy-and-task-types",
+    "rag-advanced-query-and-retrieval",
+    "rag-retrieval-performance-tuning",
+    "rag-pydantic-schema-and-validation"
+  ],
+  "dependencies": {
+    "required": [
+      "agentient-python-core",
+      "agentient-devops-gcp"
+    ],
+    "optional": [
+      "agentient-adk-agents"
+    ]
+  },
+  "keywords": [
+    "rag",
+    "retrieval-augmented-generation",
+    "vertex-ai",
+    "embeddings",
+    "semantic-search",
+    "knowledge-base",
+    "citations",
+    "corpus",
+    "chunking"
+  ]
+}

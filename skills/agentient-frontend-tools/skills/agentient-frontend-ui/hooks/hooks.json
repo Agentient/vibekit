@@ -1,0 +1,14 @@
+{
+  "SessionStart": {
+    "matcher": "*",
+    "command": "echo '\n🎨 UI Component Plugin Loaded\n  - Use /add-component to scaffold shadcn/ui components\n  - Use /style-responsive for mobile-first Tailwind styling\n  - Use /add-animation for Framer Motion animations\n  - Use /make-accessible for accessibility enhancements\n\nType /help for more commands.\n'"
+  },
+  "PreToolUse": {
+    "matcher": "Write|Edit",
+    "command": "bash plugins/agentient-frontend-ui/scripts/component_validator.sh \"${TOOL_INPUT}\" 2>&1"
+  },
+  "PostToolUse": {
+    "matcher": "Write|Edit",
+    "command": "if [[ \"${TOOL_INPUT}\" == *\"components/ui/\"* ]]; then echo '✓ shadcn/ui component modified. Consider: 1) Check variants with cva, 2) Verify accessibility, 3) Test responsive design'; fi"
+  }
+}

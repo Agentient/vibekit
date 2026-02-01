@@ -1,0 +1,10 @@
+{
+  "name": "security-tools",
+  "version": "0.1.0",
+  "description": "[STUB] Security audit, OWASP, authentication, compliance",
+  "author": {
+    "name": "Agentient"
+  },
+  "license": "MIT",
+  "keywords": ["security", "owasp", "authentication", "compliance"]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "agentient-architecture-design",
+  "version": "1.0.0",
+  "description": "System architecture design plugin providing C4 model diagrams, OpenAPI 3.1.0 spec design, Mermaid.js diagrams-as-code, and architectural decision records for documentation-driven development.",
+  "confidence": 99,
+  "category": "Cross-Cutting",
+  "agents": ["architect-agent"],
+  "commands": ["create-c4-diagram", "design-api-spec", "create-sequence-diagram", "create-adr"],
+  "skills": [
+    "c4-model-architecture-diagrams",
+    "openapi-spec-design-first-apis",
+    "mermaid-diagrams-as-code",
+    "sequence-diagram-patterns",
+    "er-diagram-and-data-modeling",
+    "architectural-decision-records"
+  ],
+  "dependencies": {
+    "required": [],
+    "optional": []
+  },
+  "keywords": ["c4", "architecture", "openapi", "mermaid", "diagrams-as-code", "adr", "sequence-diagram", "design-first"]
+}

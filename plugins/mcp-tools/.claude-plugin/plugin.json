@@ -1,0 +1,8 @@
+{
+  "name": "mcp-tools",
+  "version": "1.0.0",
+  "description": "Model Context Protocol (MCP) server development patterns",
+  "author": { "name": "Agentient" },
+  "license": "MIT",
+  "keywords": ["mcp", "protocol", "tools", "resources", "server", "asyncio"]
+}

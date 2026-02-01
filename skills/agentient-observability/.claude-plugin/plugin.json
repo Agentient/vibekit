@@ -1,0 +1,90 @@
+{
+  "name": "agentient-observability",
+  "version": "1.0.0",
+  "description": "Production-grade observability plugin for Next.js 14+, Python, and serverless applications. Includes structured logging, distributed tracing (OpenTelemetry), error tracking (Sentry), and SRE practices.",
+  "author": {
+    "name": "Agentient Labs",
+    "email": "contact@agentient.dev"
+  },
+  "category": "Cross-Cutting",
+  "tags": ["observability", "logging", "tracing", "opentelemetry", "sentry", "monitoring", "sre", "reliability"],
+  "dependencies": [
+    "agentient-python-core",
+    "agentient-devops-gcp"
+  ],
+  "agents": [
+    {
+      "name": "observability-engineer",
+      "path": "agents/observability-engineer-agent.md",
+      "description": "Expert observability engineer for implementing logging, tracing, error tracking, and SRE practices"
+    }
+  ],
+  "commands": [
+    {
+      "name": "setup-logging",
+      "path": "commands/setup-logging.md",
+      "description": "Set up structured logging across Next.js, Python, and Firebase Functions"
+    },
+    {
+      "name": "add-error-tracking",
+      "path": "commands/add-error-tracking.md",
+      "description": "Integrate Sentry for full-stack error and performance monitoring"
+    },
+    {
+      "name": "setup-tracing",
+      "path": "commands/setup-tracing.md",
+      "description": "Implement distributed tracing with OpenTelemetry"
+    },
+    {
+      "name": "create-alerts",
+      "path": "commands/create-alerts.md",
+      "description": "Create alerting policies and runbooks for production monitoring"
+    }
+  ],
+  "skills": [
+    {
+      "name": "cross-platform-structured-logging",
+      "path": "skills/cross-platform-structured-logging/SKILL.md",
+      "description": "Unified JSON logging across Next.js, Python, and Firebase Functions"
+    },
+    {
+      "name": "nextjs-opentelemetry-instrumentation",
+      "path": "skills/nextjs-opentelemetry-instrumentation/SKILL.md",
+      "description": "OpenTelemetry distributed tracing for Next.js 14+"
+    },
+    {
+      "name": "python-backend-opentelemetry-instrumentation",
+      "path": "skills/python-backend-opentelemetry-instrumentation/SKILL.md",
+      "description": "OpenTelemetry instrumentation for Python backend services"
+    },
+    {
+      "name": "full-stack-error-tracking-with-sentry",
+      "path": "skills/full-stack-error-tracking-with-sentry/SKILL.md",
+      "description": "Sentry integration for Next.js, Firebase Functions, and Python"
+    },
+    {
+      "name": "distributed-tracing-context-propagation",
+      "path": "skills/distributed-tracing-context-propagation/SKILL.md",
+      "description": "W3C TraceContext propagation across service boundaries"
+    },
+    {
+      "name": "serverless-slo-definition-monitoring",
+      "path": "skills/serverless-slo-definition-monitoring/SKILL.md",
+      "description": "Define and monitor SLOs for serverless applications"
+    },
+    {
+      "name": "cost-optimized-log-trace-sampling",
+      "path": "skills/cost-optimized-log-trace-sampling/SKILL.md",
+      "description": "Intelligent sampling strategies to reduce observability costs"
+    },
+    {
+      "name": "actionable-alerting-runbook-design",
+      "path": "skills/actionable-alerting-runbook-design/SKILL.md",
+      "description": "Create effective alerts and runbooks to prevent alert fatigue"
+    }
+  ],
+  "hooks": {
+    "enabled": true,
+    "path": "hooks/hooks.json"
+  }
+}

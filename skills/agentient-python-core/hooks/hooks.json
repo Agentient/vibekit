@@ -1,0 +1,14 @@
+{
+  "PostToolUse": [
+    {
+      "matcher": "Write|Edit",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python3 $CLAUDE_PROJECT_DIR/plugins/agentient-python-core/scripts/python_quality_gate.py",
+          "timeout": 30
+        }
+      ]
+    }
+  ]
+}

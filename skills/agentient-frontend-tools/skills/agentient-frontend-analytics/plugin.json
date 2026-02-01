@@ -1,0 +1,22 @@
+{
+  "name": "agentient-frontend-analytics",
+  "version": "1.0.0",
+  "description": "Privacy-compliant analytics integration for Next.js 14+ applications using Firebase Analytics and Google Analytics 4, with type-safe event tracking and consent-first initialization.",
+  "confidence": 99,
+  "category": "Frontend",
+  "agents": ["analytics-engineer-agent"],
+  "commands": ["setup-analytics", "create-event", "track-conversion", "validate-analytics"],
+  "skills": [
+    "firebase-ga4-initialization-and-consent",
+    "analytics-event-taxonomy-design",
+    "type-safe-event-tracking-implementation",
+    "ga4-conversion-tracking-and-attribution",
+    "privacy-compliance-implementation",
+    "analytics-debugging-and-validation-patterns"
+  ],
+  "dependencies": {
+    "required": ["agentient-security", "agentient-frontend-foundation"],
+    "optional": []
+  },
+  "keywords": ["firebase", "ga4", "analytics", "tracking", "consent", "conversion", "event-taxonomy", "type-safe"]
+}

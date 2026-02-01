@@ -1,0 +1,8 @@
+{
+  "name": "frontend-tools",
+  "version": "1.0.0",
+  "description": "Next.js 14+, React, TypeScript, Firebase, Tailwind, Zustand patterns",
+  "author": { "name": "Agentient" },
+  "license": "MIT",
+  "keywords": ["nextjs", "react", "typescript", "firebase", "tailwind", "zustand", "zod", "shadcn"]
+}

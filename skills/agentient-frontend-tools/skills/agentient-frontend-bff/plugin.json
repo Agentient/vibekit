@@ -1,0 +1,23 @@
+{
+  "name": "agentient-frontend-bff",
+  "version": "1.0.0",
+  "description": "Backend-for-Frontend patterns for Next.js 14+ using Server Actions, API Route Handlers, and Firebase Functions v2 with Zod validation and type-safe contracts.",
+  "confidence": 99,
+  "category": "Frontend",
+  "agents": ["bff-architect-agent"],
+  "commands": ["create-server-action", "create-api-route", "create-firebase-function", "validate-schema"],
+  "skills": [
+    "bff-zod-schema-validation",
+    "nextjs-server-action-mutations",
+    "nextjs-api-route-handlers",
+    "firebase-functions-v2-patterns",
+    "bff-security-patterns",
+    "bff-error-handling-and-logging",
+    "bff-typescript-type-generation"
+  ],
+  "dependencies": {
+    "required": ["agentient-security", "agentient-frontend-foundation"],
+    "optional": []
+  },
+  "keywords": ["bff", "server-actions", "api-routes", "firebase-functions", "zod", "validation", "type-safe", "next.js"]
+}

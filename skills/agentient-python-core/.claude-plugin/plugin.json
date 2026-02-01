@@ -1,0 +1,34 @@
+{
+  "name": "agentient-python-core",
+  "version": "1.0.0",
+  "description": "Python 3.13 development with Pydantic V2, type safety, testing with pytest, and code quality enforcement. Provides foundational patterns for all Python-based plugins in the Vibekit marketplace.",
+  "author": {
+    "name": "Agentient Labs",
+    "email": "contact@agentient.dev"
+  },
+  "agents": [
+    "agents/python-architect-agent.md",
+    "agents/testing-agent.md"
+  ],
+  "commands": [
+    "commands/create-module.md",
+    "commands/create-test.md",
+    "commands/add-validator.md",
+    "commands/run-quality-check.md"
+  ],
+  "skills": [
+    "skills/python-3-13-patterns",
+    "skills/pydantic-v2-strict",
+    "skills/async-patterns",
+    "skills/pytest-patterns",
+    "skills/type-hints-best-practices"
+  ],
+  "hooks": "hooks/hooks.json",
+  "configuration": {
+    "PYTHON_VERSION": "3.13",
+    "PYDANTIC_VERSION": "2.12+",
+    "STRICT_MODE": "true",
+    "COVERAGE_THRESHOLD": "80",
+    "QUALITY_GATE_ENABLED": "true"
+  }
+}

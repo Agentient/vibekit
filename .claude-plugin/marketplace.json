@@ -48,6 +48,94 @@
       "version": "1.0.0",
       "category": "meta",
       "tags": ["skill-generation", "meta", "templates", "reasoning-techniques"]
+    },
+    {
+      "name": "python-tools",
+      "source": "./plugins/python-tools",
+      "description": "Python 3.13 patterns with Pydantic V2, async, pytest, type hints",
+      "version": "1.0.0",
+      "category": "development",
+      "tags": ["python", "pydantic", "pytest", "async", "type-hints", "mypy"]
+    },
+    {
+      "name": "adk-tools",
+      "source": "./plugins/adk-tools",
+      "description": "Google ADK agent development with Vertex AI SDK",
+      "version": "1.0.0",
+      "category": "agents",
+      "tags": ["adk", "vertex-ai", "agents", "orchestration", "rag", "gemini"]
+    },
+    {
+      "name": "frontend-tools",
+      "source": "./plugins/frontend-tools",
+      "description": "Next.js 14+, React, TypeScript, Firebase, Tailwind, Zustand patterns",
+      "version": "1.0.0",
+      "category": "frontend",
+      "tags": ["nextjs", "react", "typescript", "firebase", "tailwind", "zustand", "shadcn"]
+    },
+    {
+      "name": "gcp-tools",
+      "source": "./plugins/gcp-tools",
+      "description": "GCP deployment, Cloud Run, CI/CD, Infrastructure as Code",
+      "version": "1.0.0",
+      "category": "devops",
+      "tags": ["gcp", "cloud-run", "cicd", "terraform", "devops"]
+    },
+    {
+      "name": "mcp-tools",
+      "source": "./plugins/mcp-tools",
+      "description": "Model Context Protocol server development patterns",
+      "version": "1.0.0",
+      "category": "development",
+      "tags": ["mcp", "protocol", "tools", "resources", "asyncio"]
+    },
+    {
+      "name": "quality-tools",
+      "source": "./plugins/quality-tools",
+      "description": "Testing, code review, linting, coverage analysis",
+      "version": "1.0.0",
+      "category": "quality",
+      "tags": ["testing", "code-review", "linting", "coverage", "quality"]
+    },
+    {
+      "name": "observability-tools",
+      "source": "./plugins/observability-tools",
+      "description": "Logging, tracing, error tracking, alerting, OpenTelemetry",
+      "version": "1.0.0",
+      "category": "operations",
+      "tags": ["logging", "tracing", "sentry", "opentelemetry", "alerting"]
+    },
+    {
+      "name": "performance-tools",
+      "source": "./plugins/performance-tools",
+      "description": "Frontend and backend performance optimization patterns",
+      "version": "1.0.0",
+      "category": "performance",
+      "tags": ["performance", "profiling", "caching", "optimization", "bundle"]
+    },
+    {
+      "name": "rag-tools",
+      "source": "./plugins/rag-tools",
+      "description": "[STUB] RAG pipeline development with Vertex AI RAG Engine",
+      "version": "0.1.0",
+      "category": "agents",
+      "tags": ["rag", "embeddings", "vertex-ai", "retrieval"]
+    },
+    {
+      "name": "security-tools",
+      "source": "./plugins/security-tools",
+      "description": "[STUB] Security audit, OWASP, authentication, compliance",
+      "version": "0.1.0",
+      "category": "security",
+      "tags": ["security", "owasp", "authentication", "compliance"]
+    },
+    {
+      "name": "architecture-tools",
+      "source": "./plugins/architecture-tools",
+      "description": "[STUB] C4 diagrams, OpenAPI specs, architectural decisions",
+      "version": "0.1.0",
+      "category": "architecture",
+      "tags": ["c4", "openapi", "mermaid", "adr"]
     }
   ]
 }

@@ -1,0 +1,8 @@
+{
+  "name": "observability-tools",
+  "version": "1.0.0",
+  "description": "Logging, tracing, error tracking, alerting, and OpenTelemetry patterns",
+  "author": { "name": "Agentient" },
+  "license": "MIT",
+  "keywords": ["logging", "tracing", "sentry", "opentelemetry", "alerting"]
+}

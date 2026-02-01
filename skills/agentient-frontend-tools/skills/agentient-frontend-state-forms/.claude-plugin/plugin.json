@@ -1,0 +1,31 @@
+{
+  "name": "agentient-frontend-state-forms",
+  "version": "1.0.0",
+  "description": "Comprehensive state management with Zustand 5.0.2+ and form handling with React Hook Form 7.x + Zod 4.1.12+ for Next.js 14+ applications. Enforces the Type Inference Chain pattern: Zod schema → z.infer<typeof> → React Hook Form → Zustand store types for absolute type safety across the data layer.",
+  "author": {
+    "name": "Agentient Labs",
+    "email": "contact@agentient.dev"
+  },
+  "agents": [
+    "agents/state-architect-agent.md",
+    "agents/form-builder-agent.md"
+  ],
+  "commands": [
+    "commands/create-store.md",
+    "commands/create-form.md",
+    "commands/add-field.md",
+    "commands/setup-persistence.md"
+  ],
+  "hooks": "hooks/hooks.json",
+  "dependencies": [
+    "agentient-frontend-foundation@vibekit"
+  ],
+  "configuration": {
+    "ZUSTAND_VERSION": "5.0.2",
+    "REACT_HOOK_FORM_VERSION": "7.x",
+    "ZOD_VERSION": "4.1.12",
+    "TYPESCRIPT_STRICT": "true",
+    "TYPE_INFERENCE_CHAIN_MANDATORY": "true",
+    "CLIENT_COMPONENTS_REQUIRED": "true"
+  }
+}

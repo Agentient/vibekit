@@ -1,0 +1,31 @@
+{
+  "name": "agentient-frontend-foundation",
+  "version": "1.0.0",
+  "description": "Core Next.js 14+ App Router architecture, project structure, TypeScript patterns, and architectural decision-making. Enforces React Server Components as default, strict TypeScript, and PRD-driven development workflows.",
+  "author": {
+    "name": "Agentient Labs",
+    "email": "contact@agentient.dev"
+  },
+  "agents": [
+    "agents/architect-agent.md",
+    "agents/product-owner-agent.md",
+    "agents/api-designer-agent.md"
+  ],
+  "commands": [
+    "commands/prd-analyze.md",
+    "commands/setup-project.md",
+    "commands/create-page.md",
+    "commands/generate-adr.md",
+    "commands/api-contract.md"
+  ],
+  "hooks": "hooks/hooks.json",
+  "configuration": {
+    "QUALITY_THRESHOLD": "97",
+    "PLAN_MODE_DEFAULT": "true",
+    "RSC_DEFAULT": "true",
+    "CLIENT_DIRECTIVE_MINIMAL": "true",
+    "TYPESCRIPT_STRICT": "true",
+    "EXPLICIT_RETURN_TYPES": "true"
+  },
+  "dependencies": []
+}

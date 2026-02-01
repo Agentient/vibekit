@@ -1,0 +1,51 @@
+{
+  "name": "agentient-devops-gcp",
+  "version": "1.0.0",
+  "description": "Google Cloud Platform deployment automation with Cloud Run, Terraform IaC, CI/CD pipelines, and security-first DevOps practices",
+  "author": {
+    "name": "Agentient Labs",
+    "email": "contact@agentient.dev"
+  },
+  "agents": [
+    "agents/devops-engineer-agent.md",
+    "agents/deployment-agent.md"
+  ],
+  "commands": [
+    "commands/deploy-cloud-run.md",
+    "commands/setup-cicd.md",
+    "commands/configure-iam.md",
+    "commands/create-terraform.md"
+  ],
+  "hooks": "hooks/hooks.json",
+  "dependencies": [
+    "agentient-quality-assurance@vibekit",
+    "agentient-security@vibekit"
+  ],
+  "configuration": {
+    "QUALITY_THRESHOLD": "99",
+    "PLAN_MODE_DEFAULT": "true",
+    "LEAST_PRIVILEGE_IAM": "true",
+    "SECRETS_IN_SECRET_MANAGER": "true",
+    "TERRAFORM_REQUIRED": "true",
+    "HEALTH_CHECKS_REQUIRED": "true"
+  },
+  "metadata": {
+    "category": "Cross-Cutting",
+    "confidence": "99%",
+    "modes": [
+      "gcp_dev",
+      "cloud_run_dev",
+      "deployment"
+    ],
+    "tags": [
+      "gcp",
+      "devops",
+      "terraform",
+      "cloud-run",
+      "cicd",
+      "infrastructure",
+      "deployment",
+      "security"
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "architecture-tools",
+  "version": "0.1.0",
+  "description": "[STUB] System architecture design and documentation using C4 model, OpenAPI, Mermaid diagrams, and ADRs",
+  "author": { "name": "Agentient" },
+  "license": "MIT",
+  "keywords": ["architecture", "c4-model", "openapi", "mermaid", "adr"]
+}

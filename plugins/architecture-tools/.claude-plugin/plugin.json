@@ -1,0 +1,10 @@
+{
+  "name": "architecture-tools",
+  "version": "0.1.0",
+  "description": "[STUB] C4 diagrams, OpenAPI specs, architectural decisions",
+  "author": {
+    "name": "Agentient"
+  },
+  "license": "MIT",
+  "keywords": ["c4", "openapi", "mermaid", "adr"]
+}

@@ -1,0 +1,38 @@
+{
+  "name": "agentient-adk-agents",
+  "version": "1.0.0",
+  "description": "ADK (Agent Development Kit) agent creation, Vertex AI integration, prompt engineering, agent orchestration, and RAG integration. Provides comprehensive patterns for building production-grade AI agents on Google Cloud Platform.",
+  "author": {
+    "name": "Agentient Labs",
+    "email": "contact@agentient.dev"
+  },
+  "agents": [
+    "agents/adk-architect-agent.md",
+    "agents/prompt-engineer-agent.md",
+    "agents/rag-integration-agent.md"
+  ],
+  "commands": [
+    "commands/create-agent.md",
+    "commands/optimize-prompt.md",
+    "commands/add-rag.md",
+    "commands/create-tool.md"
+  ],
+  "skills": [
+    "skills/adk-fundamentals",
+    "skills/vertex-ai-sdk",
+    "skills/prompt-engineering",
+    "skills/agent-orchestration",
+    "skills/rag-patterns"
+  ],
+  "hooks": "hooks/hooks.json",
+  "dependencies": [
+    "agentient-python-core@vibekit"
+  ],
+  "configuration": {
+    "ADK_VERSION": "latest",
+    "VERTEX_AI_SDK_VERSION": "latest",
+    "PYDANTIC_STRICT_MODE": "true",
+    "ASYNC_FIRST": "true",
+    "PROMPT_XML_STRUCTURE": "true"
+  }
+}

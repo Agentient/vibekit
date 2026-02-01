@@ -1,0 +1,34 @@
+{
+  "hooks": {
+    "pre-commit": {
+      "description": "Check bundle size before committing frontend changes",
+      "trigger": "before git commit",
+      "condition": {
+        "files_changed": ["package.json", "*.tsx", "*.ts", "*.jsx", "*.js"]
+      },
+      "action": {
+        "type": "warning",
+        "message": "Frontend files changed. Consider running bundle analysis: npm run analyze"
+      }
+    },
+    "post-build": {
+      "description": "Analyze bundle size after Next.js build",
+      "trigger": "after next build",
+      "action": {
+        "type": "info",
+        "message": "Build complete. Review bundle size in .next/analyze/ if bundle analyzer is enabled."
+      }
+    },
+    "performance-check": {
+      "description": "Remind to check Core Web Vitals before production deployment",
+      "trigger": "before deployment",
+      "condition": {
+        "branch": ["main", "master", "production"]
+      },
+      "action": {
+        "type": "warning",
+        "message": "Deploying to production. Have you verified Core Web Vitals (LCP < 2.5s, INP < 200ms, CLS < 0.1)?"
+      }
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "name": "agentient-quality-assurance",
+  "version": "1.0.0",
+  "description": "Comprehensive quality assurance plugin providing AI-driven testing guidance and deterministic quality gates for Python and TypeScript/JavaScript",
+  "author": {
+    "name": "Agentient Labs",
+    "email": "contact@agentient.dev"
+  },
+  "agents": [
+    "agents/qa-engineer-agent.md",
+    "agents/code-reviewer-agent.md"
+  ],
+  "commands": [
+    "commands/review-code.md",
+    "commands/analyze-coverage.md",
+    "commands/suggest-tests.md",
+    "commands/quality-report.md"
+  ],
+  "hooks": "hooks/hooks.json",
+  "dependencies": [
+    "agentient-security@vibekit"
+  ],
+  "configuration": {
+    "BACKEND_COVERAGE_THRESHOLD": "80",
+    "FRONTEND_COVERAGE_THRESHOLD": "70",
+    "QUALITY_THRESHOLD": "99",
+    "BLOCKING_VIA_EXIT_CODE_2": "true",
+    "CONFIGURABLE_THRESHOLDS": "true"
+  },
+  "metadata": {
+    "category": "Cross-Cutting",
+    "confidence": "99%",
+    "modes": [
+      "code_review",
+      "testing_frontend",
+      "testing_backend"
+    ],
+    "tags": [
+      "qa",
+      "testing",
+      "code-review",
+      "coverage",
+      "quality",
+      "pytest",
+      "jest",
+      "eslint",
+      "ruff"
+    ]
+  }
+}

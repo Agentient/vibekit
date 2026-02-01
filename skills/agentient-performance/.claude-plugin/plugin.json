@@ -1,0 +1,80 @@
+{
+  "name": "agentient-performance",
+  "version": "1.0.0",
+  "description": "Performance optimization plugin for Next.js 14+, React 18+, and Python applications. Includes Core Web Vitals optimization, bundle analysis, advanced caching strategies, and profiling tools.",
+  "author": {
+    "name": "Agentient Labs",
+    "email": "contact@agentient.dev"
+  },
+  "category": "Cross-Cutting",
+  "tags": ["performance", "optimization", "core-web-vitals", "caching", "profiling", "bundle-analysis"],
+  "dependencies": [
+    "agentient-frontend-foundation",
+    "agentient-python-core"
+  ],
+  "agents": [
+    {
+      "name": "performance-engineer",
+      "path": "agents/performance-engineer-agent.md",
+      "description": "Expert performance engineer for diagnosing bottlenecks and implementing optimization strategies"
+    }
+  ],
+  "commands": [
+    {
+      "name": "analyze-performance",
+      "path": "commands/analyze-performance.md",
+      "description": "Analyze application performance metrics and identify optimization opportunities"
+    },
+    {
+      "name": "optimize-bundle",
+      "path": "commands/optimize-bundle.md",
+      "description": "Analyze and optimize JavaScript bundle size and loading performance"
+    },
+    {
+      "name": "cache-strategy",
+      "path": "commands/cache-strategy.md",
+      "description": "Design and implement caching strategies for optimal performance"
+    },
+    {
+      "name": "profile-code",
+      "path": "commands/profile-code.md",
+      "description": "Profile application code to identify performance bottlenecks"
+    }
+  ],
+  "skills": [
+    {
+      "name": "nextjs-rsc-performance-patterns",
+      "path": "skills/nextjs-rsc-performance-patterns/SKILL.md",
+      "description": "Performance optimization patterns for Next.js 14+ React Server Components"
+    },
+    {
+      "name": "react-concurrency-and-memoization",
+      "path": "skills/react-concurrency-and-memoization/SKILL.md",
+      "description": "React 18+ concurrency features and advanced memoization techniques"
+    },
+    {
+      "name": "frontend-bundle-analysis-and-optimization",
+      "path": "skills/frontend-bundle-analysis-and-optimization/SKILL.md",
+      "description": "Bundle analysis and optimization strategies for Next.js applications"
+    },
+    {
+      "name": "browser-runtime-performance-profiling",
+      "path": "skills/browser-runtime-performance-profiling/SKILL.md",
+      "description": "Browser runtime profiling and Core Web Vitals optimization"
+    },
+    {
+      "name": "python-advanced-profiling-and-optimization",
+      "path": "skills/python-advanced-profiling-and-optimization/SKILL.md",
+      "description": "Advanced Python profiling and optimization techniques"
+    },
+    {
+      "name": "advanced-caching-strategies",
+      "path": "skills/advanced-caching-strategies/SKILL.md",
+      "description": "Multi-layer caching strategies for full-stack applications"
+    }
+  ],
+  "hooks": {
+    "enabled": true,
+    "path": "hooks/hooks.json"
+  }
+}

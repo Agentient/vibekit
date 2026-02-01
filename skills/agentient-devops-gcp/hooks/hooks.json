@@ -1,0 +1,48 @@
+{
+  "PreToolUse": [
+    {
+      "matcher": "Bash",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python3 -c \"import sys, json, re; data = json.load(sys.stdin); cmd = data.get('tool_input', {}).get('command', ''); dangerous = ['rm -rf', 'gcloud projects delete', 'gsutil rm -r', 'terraform destroy', 'gcloud compute instances delete', 'gcloud sql instances delete']; matches = [p for p in dangerous if p in cmd]; sys.exit(2) if matches else sys.exit(0); print(f'SECURITY_VIOLATION: Dangerous command blocked: {matches[0]}', file=sys.stderr) if matches else None\"",
+          "timeout": 5
+        }
+      ]
+    },
+    {
+      "matcher": "Write|Edit",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python3 -c \"import sys, json, re; data = json.load(sys.stdin); content = data.get('tool_input', {}).get('content', ''); file_path = data.get('tool_input', {}).get('file_path', ''); patterns = [(r'[A-Za-z0-9]{40}', 'API Key'), (r'AIza[0-9A-Za-z_-]{35}', 'Google API Key'), (r'[0-9]+-[0-9A-Za-z_]{32}\\.apps\\.googleusercontent\\.com', 'OAuth Client ID'), (r'projects/[^/]+/serviceAccounts/[^/]+/keys/[a-z0-9]+', 'Service Account Key')]; if any(f.endswith(('.tf', '.yaml', '.yml', '.py', '.js', '.ts')) for f in [file_path]): found = [(name, pat) for pat, name in patterns if re.search(pat, content)]; sys.exit(2) if found else sys.exit(0); print(f'SECURITY_VIOLATION: Potential {found[0][0]} detected in {file_path}. Use Secret Manager instead.', file=sys.stderr) if found else None\"",
+          "timeout": 10
+        }
+      ]
+    }
+  ],
+  "PostToolUse": [
+    {
+      "matcher": "Write|Edit",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python3 -c \"import sys, json; data = json.load(sys.stdin); file_path = data.get('tool_input', {}).get('file_path', ''); content = data.get('tool_input', {}).get('content', ''); violations = []; tf_checks = [('roles/owner', 'Owner role'), ('roles/editor', 'Editor role'), ('google_service_account_key', 'Service account key creation')]; yaml_checks = [('--allow-unauthenticated', 'Unauthenticated access'), ('min-instances: 0', 'Zero min instances on production service')]; checks = tf_checks if file_path.endswith('.tf') else yaml_checks if any(file_path.endswith(x) for x in ['.yaml', '.yml']) else []; violations = [name for pattern, name in checks if pattern in content]; sys.exit(2) if violations else sys.exit(0); print(f'POLICY_VIOLATION in {file_path}: {violations[0]} detected. This violates security best practices.', file=sys.stderr) if violations else None\"",
+          "timeout": 10
+        }
+      ]
+    }
+  ],
+  "SessionStart": [
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "echo '🔐 GCP DevOps Security Hooks Active:\\n  ✓ Dangerous command blocker\\n  ✓ Secret leak prevention\\n  ✓ IAM policy validator\\n  ✓ Terraform security checks\\n\\n💡 Use Plan Mode for infrastructure changes'",
+          "timeout": 5
+        }
+      ]
+    }
+  ]
+}

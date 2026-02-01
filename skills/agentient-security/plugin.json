@@ -1,0 +1,23 @@
+{
+  "name": "agentient-security",
+  "version": "1.0.0",
+  "description": "Comprehensive security audit and vulnerability detection plugin covering OWASP Top 10, authentication patterns, secure headers, privacy compliance, and GCP infrastructure hardening.",
+  "confidence": 99,
+  "category": "Cross-Cutting",
+  "agents": ["security-auditor-agent"],
+  "commands": ["security-audit", "check-auth", "scan-vulnerabilities", "validate-headers"],
+  "skills": [
+    "owasp-code-vulnerability-analysis",
+    "owasp-access-control-patterns",
+    "authentication-and-session-security",
+    "secure-http-headers-and-csp",
+    "privacy-consent-management",
+    "gcp-security-hardening",
+    "security-testing-patterns"
+  ],
+  "dependencies": {
+    "required": ["agentient-python-core", "agentient-frontend-foundation"],
+    "optional": ["agentient-devops-gcp"]
+  },
+  "keywords": ["owasp", "security", "vulnerability", "authentication", "authorization", "xss", "csrf", "idor", "csp", "gdpr", "privacy"]
+}

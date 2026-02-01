@@ -1,0 +1,29 @@
+{
+  "hooks": {
+    "pre-deploy": {
+      "description": "Verify observability instrumentation before deployment",
+      "trigger": "before deployment",
+      "condition": {
+        "branch": ["main", "master", "production"]
+      },
+      "action": {
+        "type": "checklist",
+        "items": [
+          "Structured logging configured?",
+          "OpenTelemetry tracing enabled?",
+          "Sentry error tracking integrated?",
+          "SLOs defined for this service?",
+          "Alert runbooks updated?"
+        ]
+      }
+    },
+    "post-incident": {
+      "description": "Remind to update runbooks after incidents",
+      "trigger": "manual",
+      "action": {
+        "type": "reminder",
+        "message": "Update runbook with lessons learned from this incident. Document new failure modes and mitigation steps."
+      }
+    }
+  }
+}

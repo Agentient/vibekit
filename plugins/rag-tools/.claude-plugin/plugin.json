@@ -1,0 +1,10 @@
+{
+  "name": "rag-tools",
+  "version": "0.1.0",
+  "description": "[STUB] RAG pipeline development with Vertex AI RAG Engine",
+  "author": {
+    "name": "Agentient"
+  },
+  "license": "MIT",
+  "keywords": ["rag", "embeddings", "vertex-ai", "retrieval"]
+}

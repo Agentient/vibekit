@@ -1,0 +1,8 @@
+{
+  "name": "gcp-tools",
+  "version": "1.0.0",
+  "description": "GCP deployment patterns including Cloud Run, CI/CD, and Infrastructure as Code",
+  "author": { "name": "Agentient" },
+  "license": "MIT",
+  "keywords": ["gcp", "cloud-run", "cicd", "terraform", "devops", "infrastructure"]
+}

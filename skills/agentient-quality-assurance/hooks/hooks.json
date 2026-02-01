@@ -1,0 +1,38 @@
+{
+  "PostToolUse": [
+    {
+      "matcher": "Write|Edit",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python3 -c \"import sys, json, subprocess, pathlib; data = json.load(sys.stdin); file_path = data.get('tool_input', {}).get('file_path', ''); plugin_dir = pathlib.Path(__file__).parent if hasattr(__file__, '__file__') else pathlib.Path.cwd(); script_path = plugin_dir / 'scripts' / 'quality_gate.py'; result = subprocess.run([sys.executable, str(script_path)], input=json.dumps(data), capture_output=True, text=True) if file_path and pathlib.Path(file_path).suffix in ['.py', '.ts', '.tsx', '.js', '.jsx'] else None; sys.exit(result.returncode) if result else sys.exit(0); print(result.stdout) if result else None; print(result.stderr, file=sys.stderr) if result and result.stderr else None\"",
+          "timeout": 90
+        }
+      ]
+    }
+  ],
+  "Stop": [
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python3 -c \"import sys, subprocess, pathlib, os; plugin_dir = pathlib.Path(os.getenv('CLAUDE_PROJECT_DIR', '.')) / '.claude' / 'plugins' / 'agentient-quality-assurance' if os.getenv('CLAUDE_PROJECT_DIR') else pathlib.Path.cwd(); script_path = plugin_dir / 'scripts' / 'coverage_validator.py'; result = subprocess.run([sys.executable, str(script_path)], capture_output=True, text=True); sys.exit(result.returncode); print(result.stdout); print(result.stderr, file=sys.stderr) if result.stderr else None\"",
+          "timeout": 60
+        }
+      ]
+    }
+  ],
+  "SessionStart": [
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "echo '\n🔍 Quality Assurance Hooks Active:\n  ✓ Code quality gate (Python: Ruff, mypy | JS/TS: ESLint, tsc)\n  ✓ Coverage threshold enforcement (Backend: 80% | Frontend: 70%)\n  ✓ Exit Code 2 blocking on violations\n\n💡 Quality gate runs after file writes, coverage check runs before agent finishes'",
+          "timeout": 5
+        }
+      ]
+    }
+  ]
+}

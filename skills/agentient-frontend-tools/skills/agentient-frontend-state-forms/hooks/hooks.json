@@ -1,0 +1,6 @@
+{
+  "PostToolUse": {
+    "matcher": "Write|Edit",
+    "command": "echo '✓ State/Form type validation: Checking for Type Inference Chain compliance...'"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "performance-tools",
+  "version": "1.0.0",
+  "description": "Frontend and backend performance optimization patterns",
+  "author": { "name": "Agentient" },
+  "license": "MIT",
+  "keywords": ["performance", "profiling", "caching", "optimization", "bundle"]
+}

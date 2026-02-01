@@ -1,0 +1,14 @@
+{
+  "SessionStart": {
+    "matcher": "*",
+    "command": "echo '\n💡 TIP: This plugin enforces Plan Mode for architectural tasks. Use Plan Mode when:\n  - Designing system architecture\n  - Creating ADRs\n  - Analyzing PRDs\n  - Designing API contracts\n\nType /help for available commands.\n'"
+  },
+  "UserPromptSubmit": {
+    "matcher": "*",
+    "command": "echo '\n📋 PRD-DRIVEN DEVELOPMENT REMINDER:\n  - Have you referenced the PRD for this feature?\n  - Do you need to run /prd-analyze first?\n  - Should architectural decisions be documented in an ADR?\n' | head -n 5"
+  },
+  "PreToolUse": {
+    "matcher": "Write|Edit",
+    "command": "bash plugins/agentient-frontend-foundation/scripts/structure_validator.sh \"${TOOL_INPUT}\" 2>&1"
+  }
+}

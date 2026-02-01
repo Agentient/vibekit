@@ -1,0 +1,14 @@
+{
+  "SessionStart": {
+    "matcher": "*",
+    "command": "echo '\n🔥 Firebase Data Plugin Loaded\n  - Use /setup-firebase to initialize Firebase\n  - Use /model-collection to create type-safe collections\n  - Use /create-auth-flow for authentication\n  - Use /generate-security-rules for Firestore rules\n\nType /help for more commands.\n'"
+  },
+  "PreToolUse": {
+    "matcher": "Bash",
+    "command": "bash plugins/agentient-frontend-data/scripts/firebase_command_validator.sh \"${TOOL_INPUT}\" 2>&1"
+  },
+  "PostToolUse": {
+    "matcher": "Write|Edit",
+    "command": "if [[ \"${TOOL_INPUT}\" == *\".ts\"* ]] || [[ \"${TOOL_INPUT}\" == *\".tsx\"* ]]; then echo '✓ TypeScript file modified. Consider running: npm run type-check'; fi"
+  }
+}
