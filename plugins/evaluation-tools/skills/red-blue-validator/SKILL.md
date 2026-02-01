@@ -1170,6 +1170,138 @@ flow:
 
 ---
 
+### Example 3: Investment Decision — Series B Funding
+
+```yaml
+input:
+  subject: "Accept Series B term sheet at $50M valuation"
+  subject_type: investment
+  max_rounds: 2
+  attack_intensity: standard
+  convergence_mode: no_new_critical
+
+flow:
+  pre_round:
+    proposition: "Accept $15M Series B at $50M pre-money valuation from [VC Firm]"
+    attack_surface:
+      - ECONOMIC: Valuation, dilution, runway
+      - ASSUMPTIONS: Growth projections, market size
+      - DEPENDENCIES: VC firm reputation, board dynamics
+      - COMPETITIVE: Market timing, competitor funding
+
+  round_1:
+    red_team:
+      attacks:
+        - ATK-1-1: "Valuation assumes 3x YoY growth; current trajectory is 1.8x"
+          Category: ASSUMPTIONS
+          Severity: HIGH
+          Steel-manned: "At 1.8x growth, next round valuation math doesn't work;
+                        down round likely in 18 months"
+
+        - ATK-1-2: "15-month runway at current burn; need to hit milestones or raise bridge"
+          Category: ECONOMIC
+          Severity: HIGH
+          Steel-manned: "Milestones require growth acceleration you haven't demonstrated"
+
+        - ATK-1-3: "[VC Firm] has reputation for replacing founders at Series C"
+          Category: DEPENDENCIES
+          Severity: MEDIUM
+          Steel-manned: "3 of their last 5 Series B companies had founder transitions"
+
+        - ATK-1-4: "Competitor just raised $40M; will outspend on customer acquisition"
+          Category: COMPETITIVE
+          Severity: HIGH
+          Steel-manned: "Their CAC advantage compounds; market share gap widens"
+
+    blue_team:
+      defenses:
+        - DEF-1-1: Response to ATK-1-1
+          Type: HARDEN
+          Defense: "Negotiate milestone-based valuation adjustment; lower initial
+                   valuation with ratchet up if growth targets hit"
+          Proposition Change: Add milestone ratchet provision
+
+        - DEF-1-2: Response to ATK-1-2
+          Type: MITIGATE
+          Defense: "Negotiate 18-month runway minimum; reduce burn by 20% through
+                   hiring pause; extend runway to 20 months"
+          Residual: REDUCED
+
+        - DEF-1-3: Response to ATK-1-3
+          Type: MITIGATE
+          Defense: "Negotiate founder-friendly protective provisions; 2-year
+                   employment agreements; board composition safeguards"
+          Residual: REDUCED
+
+        - DEF-1-4: Response to ATK-1-4
+          Type: ACCEPT
+          Defense: "Competitive pressure is real but unavoidable. Focus on
+                   capital-efficient growth and product differentiation over
+                   CAC war. This is market reality, not term sheet issue."
+          Residual: UNCHANGED
+
+    evaluation:
+      new_critical: 0
+      new_high: 3
+      decision: CONTINUE
+
+  round_2:
+    red_team:
+      attacks:
+        - ATK-2-1: "Milestone ratchet creates misaligned incentives; may optimize
+                   for metrics over business health"
+          Category: ASSUMPTIONS
+          Severity: MEDIUM
+
+        - ATK-2-2: "Hiring pause delays product roadmap; competitive gap widens"
+          Category: TEMPORAL
+          Severity: MEDIUM
+
+    blue_team:
+      defenses:
+        - DEF-2-1: Response to ATK-2-1
+          Type: MITIGATE
+          Defense: "Structure milestones around leading indicators (retention,
+                   NPS) not just growth metrics"
+          Residual: REDUCED
+
+        - DEF-2-2: Response to ATK-2-2
+          Type: ACCEPT
+          Defense: "Trade-off accepted; survival > speed. Revisit hiring
+                   after 6-month runway checkpoint."
+          Residual: UNCHANGED
+
+    evaluation:
+      new_critical: 0
+      new_high: 0
+      decision: CONVERGED
+
+  post_round:
+    hardened_proposition: |
+      Accept Series B with modifications:
+      - Milestone-based valuation: $45M base + $10M ratchet if 2.5x growth
+      - 18-month minimum runway commitment
+      - Founder protective provisions (2-year agreements, board balance)
+      - Hiring pause for 6 months; revisit at runway checkpoint
+      - Milestones tied to retention/NPS, not just growth
+
+    risk_assessment:
+      total_risks: 4
+      risk_profile: MODERATE
+      go_no_go: PROCEED_WITH_CAUTION
+
+      recommendation: |
+        PROCEED_WITH_CAUTION — Accept modified term sheet. Key risks:
+        1. Competitive pressure (accepted as market reality)
+        2. Growth trajectory uncertainty (mitigated by ratchet)
+        3. Founder/board dynamics (mitigated by provisions)
+
+        Negotiate the hardened terms before signing. Walk away if
+        milestone ratchet or protective provisions rejected.
+```
+
+---
+
 ## 14. Quick Start
 
 ### Minimal Invocation
