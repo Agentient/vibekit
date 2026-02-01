@@ -1,0 +1,196 @@
+# Checkpoints for research-interviewer
+# References: @core/checkpoint-patterns.yaml
+# Version: 1.0
+# Last Updated: 2026-02-01
+
+skill: research-interviewer
+description: |
+  Defines AskUserQuestion checkpoints for the research-interviewer workflow.
+  Checkpoints ensure output format, validation mode, and confidence thresholds
+  align with user intent before conducting the interview.
+
+# =============================================================================
+# SKILL CHECKPOINTS
+# =============================================================================
+
+checkpoints:
+
+  # ---------------------------------------------------------------------------
+  # Phase 1: Context Establishment
+  # ---------------------------------------------------------------------------
+
+  - id: output_format_selection
+    type: OUTPUT_FORMAT
+    phase: 1
+    description: |
+      Triggers when output format is not specified. Output format determines
+      the structure of the final deliverable and its downstream compatibility.
+    trigger:
+      condition: "output_format NOT specified"
+    formats:
+      - id: problem_statement
+        label: "Problem Statement (Recommended)"
+        description: "CONTRACT-01 compliant artifact for research briefs, ideation, evaluation"
+        use_when: "Feeding into research workflows, need structured problem definition"
+      - id: knowledge_corpus
+        label: "Knowledge Corpus"
+        description: "RAG-optimized XML with 47+ findings for context injection"
+        use_when: "Building knowledge bases, documentation, RAG systems"
+      - id: requirements
+        label: "Requirements"
+        description: "Job stories format with acceptance criteria"
+        use_when: "Feeding into development workflows, specifications"
+    default: problem_statement
+    example_questions:
+      - situation: "Interview about authentication pain points"
+        question: "What format should the interview output take?"
+        options:
+          - "Problem Statement (for research/evaluation workflows)"
+          - "Knowledge Corpus (for documentation/RAG)"
+          - "Requirements (for development workflows)"
+
+  - id: validation_mode_selection
+    type: MISSING_CRITICAL_PARAM
+    phase: 1
+    description: |
+      Triggers when validation mode not specified and interview stakes
+      or relationship context is unclear. Mode affects questioning style.
+    trigger:
+      condition: "validation_mode NOT specified AND interview_context unclear"
+      signals:
+        - "Interviewee relationship unknown (executive vs. peer)"
+        - "Stakes of gathered information unclear"
+        - "User didn't indicate desired rigor level"
+    param: validation_mode
+    param_description: |
+      How rigorously should responses be validated and probed?
+      Mode affects questioning style and assumption challenging.
+    valid_values:
+      - id: empathetic
+        label: "Empathetic"
+        description: "Prioritize rapport, softer probing, accept more at face value"
+        use_when: "Sensitive topics, executive stakeholders, building trust"
+      - id: balanced
+        label: "Balanced (Recommended)"
+        description: "Standard verification, targeted probing on inconsistencies"
+        use_when: "Typical interviews, peer relationships"
+      - id: rigorous
+        label: "Rigorous"
+        description: "Aggressive assumption challenging, devil's advocate on all claims"
+        use_when: "High-stakes decisions, technical deep-dives, need high confidence"
+    example_questions:
+      - situation: "Interview the VP about product strategy"
+        question: "How rigorously should I validate responses?"
+        options:
+          - "Empathetic (executive, prioritize rapport)"
+          - "Balanced (standard verification)"
+          - "Rigorous (devil's advocate on claims)"
+
+  # ---------------------------------------------------------------------------
+  # Phase 6: Calibrated Termination
+  # ---------------------------------------------------------------------------
+
+  - id: confidence_threshold_adjustment
+    type: PARAM_CONFLICT
+    phase: 6
+    description: |
+      Triggers when calculated confidence is near threshold and domain
+      suggests different standards. Allows adjustment before termination.
+    trigger:
+      condition: "confidence within 0.1 of threshold AND domain_default differs"
+      signals:
+        - "Architecture domain typically needs higher confidence (0.90)"
+        - "Exploratory interviews may accept lower confidence (0.75)"
+        - "User's implicit expectations suggest different standard"
+    conflict_resolution:
+      log_override: true
+      metadata_key: "confidence_threshold_override"
+    example_questions:
+      - situation: "Confidence at 0.82, threshold is 0.85, but this is exploratory"
+        question: |
+          Current confidence is 0.82 (threshold: 0.85). For exploratory
+          interviews, 0.80 is often sufficient. Would you like to:
+        options:
+          - "Lower threshold to 0.80 and terminate (Recommended for exploratory)"
+          - "Continue until 0.85 is reached"
+          - "Specify a different threshold"
+
+  - id: premature_termination_check
+    type: ANTI_PATTERN_DETECTED
+    phase: 6
+    description: |
+      Triggers when termination criteria are met but signs suggest
+      important areas remain unexplored.
+    trigger:
+      condition: "termination_criteria_met AND warning_signs_present"
+      signals:
+        - "Unknown unknowns probe surfaced new areas"
+        - "Critical dimension still below 0.7 confidence"
+        - "Interviewee mentioned topics not yet explored"
+    anti_patterns:
+      - pattern: "Terminate with critical dimension gaps"
+        reason: "Key knowledge areas have insufficient coverage"
+        alternative: "Continue with targeted questions on critical dimensions"
+      - pattern: "Terminate immediately after unknown unknowns probe reveals new areas"
+        reason: "New areas should be explored before concluding"
+        alternative: "Brief exploration of surfaced areas"
+    example_questions:
+      - situation: "Threshold met, but interviewee mentioned 'compliance requirements'"
+        question: |
+          Confidence threshold reached, but you mentioned 'compliance
+          requirements' which we haven't explored. Would you like to:
+        options:
+          - "Explore compliance briefly before concluding (Recommended)"
+          - "Conclude now (I can follow up separately)"
+          - "Add compliance as a gap in the output"
+
+# =============================================================================
+# CHECKPOINT EXECUTION LOGIC
+# =============================================================================
+
+execution:
+
+  order: |
+    Checkpoints evaluated in phase order:
+    - Phase 1: output_format_selection, validation_mode_selection
+    - Phase 6: confidence_threshold_adjustment, premature_termination_check
+
+  skip_conditions: |
+    Skip a checkpoint if:
+    - User explicitly provided the parameter
+    - Interview goal clearly indicates output format
+    - Domain reference specifies validation mode
+    - Confidence clearly above threshold with no gaps
+
+  batch_questions: |
+    Phase 1 checkpoints can be asked together (up to 2 questions).
+    Phase 6 checkpoints are evaluated at termination decision point.
+
+# =============================================================================
+# INTEGRATION WITH SKILL.MD
+# =============================================================================
+
+skill_md_markers: |
+  In SKILL.md, checkpoints should be added:
+
+  ### Phase 1: Context Establishment
+
+  1. Receive or elicit interview_goal and topic
+  2. Determine output_format based on downstream use:
+     **CHECKPOINT: output_format_selection**
+     - If output_format not specified: AskUserQuestion
+     - Present format options with downstream implications
+  3. Select domain_reference to load appropriate vocabulary
+  4. Establish validation_mode based on stakes and relationship:
+     **CHECKPOINT: validation_mode_selection**
+     - If validation_mode not specified: AskUserQuestion
+     - Present mode options with style implications
+
+  ### Phase 6: Calibrated Termination
+
+  6.4 Termination Decision
+  **CHECKPOINT: confidence_threshold_adjustment**
+  - If confidence near threshold and domain suggests different: AskUserQuestion
+
+  **CHECKPOINT: premature_termination_check**
+  - If termination criteria met but warning signs: AskUserQuestion

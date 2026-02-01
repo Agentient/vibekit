@@ -1,0 +1,52 @@
+# Checkpoints for architecture-doc-auditor
+# References: @core/checkpoint-patterns.yaml
+# Version: 1.0
+
+skill: architecture-doc-auditor
+description: Checkpoints for architecture documentation audit workflow.
+
+checkpoints:
+  - id: framework_detection
+    type: AMBIGUOUS_CLASSIFICATION
+    phase: 1
+    trigger:
+      condition: "framework auto-detection confidence < 0.7 OR custom framework"
+    categories:
+      - id: c4
+        label: "C4 Model"
+        description: "Context, Container, Component, Code diagrams"
+      - id: arc42
+        label: "arc42"
+        description: "German architecture template with 12 sections"
+      - id: togaf
+        label: "TOGAF"
+        description: "Enterprise architecture framework"
+      - id: ieee
+        label: "IEEE 1471/42010"
+        description: "Standard viewpoint-based architecture"
+      - id: custom
+        label: "Custom"
+        description: "Proprietary or hybrid framework"
+    example_questions:
+      - situation: "Audit this architecture document"
+        question: "Which architecture framework does this follow?"
+
+  - id: audit_depth_selection
+    type: MISSING_CRITICAL_PARAM
+    phase: 1
+    trigger:
+      condition: "audit_depth NOT specified"
+    param: audit_depth
+    valid_values:
+      - id: surface
+        label: "Surface"
+        description: "Check structure and major sections only"
+      - id: standard
+        label: "Standard (Recommended)"
+        description: "Full checklist with quality assessment"
+      - id: exhaustive
+        label: "Exhaustive"
+        description: "Deep dive with anti-pattern scanning"
+    example_questions:
+      - situation: "Audit our system design doc"
+        question: "How thorough should the audit be?"

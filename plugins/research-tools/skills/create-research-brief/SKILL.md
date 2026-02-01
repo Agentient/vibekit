@@ -35,6 +35,17 @@ This skill provides 9 core capabilities:
 
 ---
 
+## Checkpoints
+
+This skill uses interactive checkpoints (see `references/checkpoints.yaml`) to resolve ambiguity:
+- **research_type_classification** — When research type is ambiguous
+- **risk_depth_selection** — When risk assessment depth not specified
+- **model_mode_selection** — When model execution mode not specified
+- **hypothesis_priors_required** — When multi_hypothesis enabled but priors missing
+- **conflict_resolution_approach** — When model outputs have significant conflicts (Phase 2)
+
+---
+
 ## 2. Two-Phase Workflow
 
 ### Phase 1: Research Design (Before Research)
@@ -43,12 +54,16 @@ This skill provides 9 core capabilities:
 |------|--------|--------|
 | 1 | **Validate Objective** | Confirm research question is answerable |
 | 2 | **Classify Research Type** | market \| competitive \| technology \| strategic |
+|   | **CHECKPOINT: research_type_classification** | If type ambiguous: AskUserQuestion |
 | 3 | **Define Scope** | In-scope, out-of-scope, boundaries |
 | 4 | **Select MECE Pattern** | 5-category decomposition structure |
 | 5 | **Generate Sub-Questions** | 3-4 questions per category |
 | 6 | **Assess Risks** | Quick \| Standard \| Comprehensive |
+|   | **CHECKPOINT: risk_depth_selection** | If depth not specified: AskUserQuestion |
 | 7 | **Assign Models** | Map categories to Claude/Gemini/GPT |
+|   | **CHECKPOINT: model_mode_selection** | If mode not specified: AskUserQuestion |
 | 8 | **Frame Hypotheses** | If `multi_hypothesis=true` |
+|   | **CHECKPOINT: hypothesis_priors_required** | If priors missing: AskUserQuestion |
 | 9 | **Recommend Expert Panel** | If `expert_panel=true` |
 | 10 | **Produce Research Brief** | XML-structured Phase 1 deliverable |
 

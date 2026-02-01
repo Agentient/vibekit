@@ -55,6 +55,17 @@ This skill provides 12 core capabilities:
 
 ---
 
+## Checkpoints
+
+This skill uses interactive checkpoints (see `references/checkpoints.yaml`) to resolve ambiguity:
+
+- **output_format_selection** — When output format not specified
+- **validation_mode_selection** — When validation mode not specified and context unclear
+- **confidence_threshold_adjustment** — When confidence near threshold and domain suggests different
+- **premature_termination_check** — When termination criteria met but warning signs present
+
+---
+
 ## 3. Parameters
 
 | Parameter | Type | Required | Default | Description |
@@ -89,8 +100,17 @@ This skill provides 12 core capabilities:
    - PROBLEM-STATEMENT: For research briefs, ideation, evaluation workflows
    - KNOWLEDGE-CORPUS: For RAG systems, documentation, context injection
    - REQUIREMENTS: For development workflows, specification skills
+
+   **CHECKPOINT: output_format_selection**
+   - If output_format not specified: **AskUserQuestion**
+   - Present format options with downstream implications
+
 3. Select `domain_reference` to load appropriate vocabulary and MECE patterns
 4. Establish `validation_mode` based on stakes and interviewee relationship
+
+   **CHECKPOINT: validation_mode_selection**
+   - If validation_mode not specified and context unclear: **AskUserQuestion**
+   - Present mode options with style implications
 5. Confirm parameters with interviewee: "We're aiming to [goal]. I'll ask questions about [topic] and produce a [format]. Does that work?"
 6. Initialize empty Knowledge Map structure
 
@@ -349,6 +369,14 @@ Capture the interviewee's confidence:
 Map to final confidence report.
 
 #### 6.4 Termination Decision
+
+**CHECKPOINT: confidence_threshold_adjustment**
+- If confidence near threshold and domain suggests different: **AskUserQuestion**
+- Example: "Confidence is 0.82 (threshold 0.85). For exploratory, 0.80 is often sufficient."
+
+**CHECKPOINT: premature_termination_check**
+- If termination criteria met but warning signs present: **AskUserQuestion**
+- Warning signs: new areas surfaced, critical dimension gaps, unexplored topics mentioned
 
 ```
 TERMINATE IF:

@@ -1,0 +1,30 @@
+# Checkpoints for improve-prompt
+# References: @core/checkpoint-patterns.yaml
+# Version: 1.0
+
+skill: improve-prompt
+description: Checkpoints for prompt improvement workflow.
+
+checkpoints:
+  - id: target_model_selection
+    type: MISSING_CRITICAL_PARAM
+    phase: 3
+    trigger:
+      condition: "target_model NOT specified"
+    param: target_model
+    valid_values:
+      - id: claude
+        label: "Claude (Recommended)"
+        description: "Anthropic Claude models - XML tags, thinking, positive framing"
+      - id: gpt
+        label: "GPT"
+        description: "OpenAI GPT models - system messages, function calling"
+      - id: gemini
+        label: "Gemini"
+        description: "Google Gemini models - grounding, citations"
+      - id: multi
+        label: "Multi-model"
+        description: "Generic prompt for any model"
+    example_questions:
+      - situation: "Improve this prompt for better results"
+        question: "Which model will this prompt be used with?"

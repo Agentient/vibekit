@@ -1,0 +1,49 @@
+# Checkpoints for prd-completeness-auditor
+# References: @core/checkpoint-patterns.yaml
+# Version: 1.0
+
+skill: prd-completeness-auditor
+description: Checkpoints for PRD completeness audit workflow.
+
+checkpoints:
+  - id: prd_type_classification
+    type: AMBIGUOUS_CLASSIFICATION
+    phase: 1
+    trigger:
+      condition: "prd_type NOT specified OR classification confidence < 0.7"
+    categories:
+      - id: feature
+        label: "Feature PRD"
+        description: "Single feature or capability"
+      - id: epic
+        label: "Epic PRD"
+        description: "Large initiative spanning multiple features"
+      - id: product
+        label: "Product PRD"
+        description: "New product or major product area"
+      - id: initiative
+        label: "Initiative PRD"
+        description: "Strategic initiative or program"
+    example_questions:
+      - situation: "Audit this product requirements document"
+        question: "What type of PRD is this?"
+
+  - id: audit_depth_selection
+    type: MISSING_CRITICAL_PARAM
+    phase: 1
+    trigger:
+      condition: "audit_depth NOT specified"
+    param: audit_depth
+    valid_values:
+      - id: quick
+        label: "Quick"
+        description: "Key sections only, fast turnaround"
+      - id: standard
+        label: "Standard (Recommended)"
+        description: "Full 116-item checklist"
+      - id: comprehensive
+        label: "Comprehensive"
+        description: "Full checklist + anti-pattern scan + remediation"
+    example_questions:
+      - situation: "Audit the mobile app PRD"
+        question: "How thorough should the audit be?"

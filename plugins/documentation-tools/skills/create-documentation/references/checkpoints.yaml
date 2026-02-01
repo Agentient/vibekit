@@ -1,0 +1,54 @@
+# Checkpoints for create-documentation
+# References: @core/checkpoint-patterns.yaml
+# Version: 1.0
+
+skill: create-documentation
+description: Checkpoints for Diataxis documentation creation workflow.
+
+checkpoints:
+  - id: doc_type_classification
+    type: AMBIGUOUS_CLASSIFICATION
+    phase: 1
+    trigger:
+      condition: "doc_type NOT specified OR classification confidence < 0.7"
+    categories:
+      - id: tutorial
+        label: "Tutorial"
+        description: "Learning by doing - guided lessons for beginners"
+      - id: how_to
+        label: "How-To"
+        description: "Task-oriented - steps to accomplish specific goal"
+      - id: explanation
+        label: "Explanation"
+        description: "Understanding-oriented - concepts and theory"
+      - id: reference
+        label: "Reference"
+        description: "Information-oriented - technical specifications"
+    example_questions:
+      - situation: "Create documentation for our API"
+        question: "What type of documentation should this be?"
+        options:
+          - "Tutorial (teach users step-by-step)"
+          - "How-To (task completion guide)"
+          - "Reference (API specifications)"
+          - "Explanation (concept overview)"
+
+  - id: reader_persona_selection
+    type: MISSING_CRITICAL_PARAM
+    phase: 2
+    trigger:
+      condition: "reader_persona NOT specified AND expertise unclear"
+    param: reader_persona
+    valid_values:
+      - id: anxious_novice
+        label: "Anxious Novice"
+        description: "New user, needs reassurance and clear guidance"
+      - id: developer
+        label: "Developer"
+        description: "Technical user, time-pressured, wants efficiency"
+      - id: scanning_executive
+        label: "Scanning Executive"
+        description: "Decision-maker, skims for key points"
+    example_questions:
+      - situation: "Create documentation for the onboarding flow"
+        question: "Who is the primary reader?"

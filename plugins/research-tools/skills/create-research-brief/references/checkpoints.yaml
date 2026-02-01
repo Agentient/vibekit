@@ -1,0 +1,242 @@
+# Checkpoints for create-research-brief
+# References: @core/checkpoint-patterns.yaml
+# Version: 1.0
+# Last Updated: 2026-02-01
+
+skill: create-research-brief
+description: |
+  Defines AskUserQuestion checkpoints for the create-research-brief workflow.
+  Checkpoints ensure research type, risk depth, and model configuration
+  align with user intent before generating research design.
+
+# =============================================================================
+# SKILL CHECKPOINTS
+# =============================================================================
+
+checkpoints:
+
+  # ---------------------------------------------------------------------------
+  # Phase 1: Research Design
+  # ---------------------------------------------------------------------------
+
+  - id: research_type_classification
+    type: AMBIGUOUS_CLASSIFICATION
+    phase: 1
+    description: |
+      Triggers when research type is ambiguous. Research type determines
+      MECE decomposition pattern and default model assignments.
+    trigger:
+      condition: "research_type NOT specified OR classification confidence < 0.7"
+      signals:
+        - "Research objective contains mixed terminology"
+        - "Multiple research types could apply"
+        - "Generic request without type keywords"
+    categories:
+      - id: market
+        label: "Market research"
+        description: "Market sizing, dynamics, demand, supply analysis"
+        mece_pattern: "Market Size, Structure, Demand, Supply, Evolution"
+        model_assignment: "Gemini: Size/Structure/Supply, Claude: Demand/Evolution"
+      - id: competitive
+        label: "Competitive intelligence"
+        description: "Competitor analysis, positioning, win/loss"
+        mece_pattern: "Product, Customers, GTM, Organization, Strategy"
+        model_assignment: "GPT: Product, Claude: Customers/Strategy, Gemini: GTM/Org"
+      - id: technology
+        label: "Technology evaluation"
+        description: "Tech assessment, build vs buy, capability analysis"
+        mece_pattern: "Capability, Maturity, Fit, Cost, Risk"
+        model_assignment: "GPT: Capability, Gemini: Maturity/Cost, Claude: Fit/Risk"
+      - id: strategic
+        label: "Strategic research"
+        description: "Strategy options, environment analysis, stakeholder mapping"
+        mece_pattern: "Current State, Environment, Options, Stakeholders, Implementation"
+        model_assignment: "Claude: State/Options/Stakeholders, Gemini: Environment, GPT: Implementation"
+    threshold: 0.7
+    example_questions:
+      - situation: "Research our options for AI integration"
+        question: "What type of research is this?"
+        options:
+          - "Technology evaluation (assessing AI tools/platforms)"
+          - "Strategic research (evaluating AI strategy options)"
+          - "Market research (understanding AI market dynamics)"
+          - "Competitive intelligence (analyzing competitor AI adoption)"
+
+  - id: risk_depth_selection
+    type: MISSING_CRITICAL_PARAM
+    phase: 1
+    description: |
+      Triggers when risk assessment depth not specified. Risk depth affects
+      thoroughness of risk analysis in the research brief.
+    trigger:
+      condition: "risk_depth NOT specified AND decision stakes unclear"
+      signals:
+        - "User didn't indicate urgency or thoroughness"
+        - "Research stakes are ambiguous"
+    param: risk_depth
+    param_description: |
+      How thorough should the research risk assessment be?
+      Higher depth = more comprehensive risk analysis.
+    valid_values:
+      - id: quick
+        label: "Quick (5 factors)"
+        description: "Top 3 risks with likelihood/impact, no mitigations"
+        use_when: "Time-sensitive, exploratory research, lower stakes"
+      - id: standard
+        label: "Standard (Recommended)"
+        description: "Mitigations, contingencies, bias audit, early warnings"
+        use_when: "Typical research projects, balanced depth"
+      - id: comprehensive
+        label: "Comprehensive"
+        description: "Risk scenarios, cascades, base rates, pre-mortem"
+        use_when: "High stakes decisions, significant investment"
+    example_questions:
+      - situation: "Create research brief for market entry"
+        question: "How thorough should the risk assessment be?"
+
+  - id: model_mode_selection
+    type: MISSING_CRITICAL_PARAM
+    phase: 1
+    description: |
+      Triggers when model execution mode not specified. Mode affects how
+      research is distributed across LLMs and how outputs are combined.
+    trigger:
+      condition: "model_mode NOT specified AND research complexity unclear"
+    param: model_mode
+    param_description: |
+      How should research be distributed across multiple LLMs?
+    valid_values:
+      - id: parallel
+        label: "Parallel (Recommended)"
+        description: "All models research simultaneously, outputs merged"
+        use_when: "Independent questions, speed is priority"
+      - id: sequential
+        label: "Sequential"
+        description: "Models build on each other's outputs"
+        use_when: "Questions depend on prior answers, iterative discovery"
+      - id: convergent
+        label: "Convergent"
+        description: "Multiple models answer same questions, triangulate"
+        use_when: "Need high confidence, cross-validation important"
+    example_questions:
+      - situation: "Multi-LLM research on competitive landscape"
+        question: "How should the models work together?"
+
+  - id: hypothesis_priors_required
+    type: MISSING_CRITICAL_PARAM
+    phase: 1
+    description: |
+      Triggers when multi_hypothesis is enabled but prior probabilities
+      are not specified. Priors are essential for Bayesian updating.
+    trigger:
+      condition: "multi_hypothesis = true AND hypothesis_priors NOT specified"
+      signals:
+        - "Hypotheses defined without prior assignments"
+        - "Priors don't sum to 100%"
+    param: hypothesis_priors
+    param_description: |
+      What's your initial probability estimate for each hypothesis?
+      Priors must sum to 100% and represent beliefs before research.
+    valid_values:
+      - id: uniform
+        label: "Uniform distribution"
+        description: "Equal probability for all hypotheses"
+      - id: informed
+        label: "Informed priors"
+        description: "User specifies probabilities based on existing knowledge"
+      - id: skeptical
+        label: "Skeptical of consensus"
+        description: "Higher weight on contrarian hypotheses"
+    example_questions:
+      - situation: "Testing hypothesis: Market will consolidate in 2 years"
+        question: |
+          You've enabled hypothesis testing. What are your prior probabilities?
+        options:
+          - "Equal probability (33% each for 3 hypotheses)"
+          - "Let me specify (I'll provide percentages)"
+          - "Skeptical stance (weight contrarian views higher)"
+
+  # ---------------------------------------------------------------------------
+  # Phase 2: Consolidation
+  # ---------------------------------------------------------------------------
+
+  - id: conflict_resolution_approach
+    type: AMBIGUOUS_CLASSIFICATION
+    phase: 2
+    description: |
+      Triggers when model outputs contain significant conflicts and
+      resolution approach is unclear. User should decide resolution strategy.
+    trigger:
+      condition: "model_conflicts_detected AND conflicts.severity >= HIGH"
+      signals:
+        - "Models provide contradictory data"
+        - "Evidence scores similar across conflicting positions"
+        - "WWHTBT analysis doesn't resolve clearly"
+    categories:
+      - id: evidence_weighted
+        label: "Weight by evidence strength"
+        description: "Higher evidence scores win conflicts"
+      - id: recency_weighted
+        label: "Weight by recency"
+        description: "More recent data wins conflicts"
+      - id: document_both
+        label: "Document both positions"
+        description: "Present conflict with both views, user decides"
+      - id: triangulate
+        label: "Require 2-of-3 agreement"
+        description: "Majority across models wins"
+    threshold: 0.5
+    example_questions:
+      - situation: "Claude says market is $50B, Gemini says $35B"
+        question: "Models disagree on key data. How should we resolve?"
+        options:
+          - "Weight by evidence strength (Recommended)"
+          - "Document both with caveats"
+          - "Require 2-of-3 agreement"
+          - "I'll review and decide"
+
+# =============================================================================
+# CHECKPOINT EXECUTION LOGIC
+# =============================================================================
+
+execution:
+
+  order: |
+    Checkpoints evaluated in phase order:
+    - Phase 1: research_type_classification, risk_depth_selection, model_mode_selection, hypothesis_priors_required
+    - Phase 2: conflict_resolution_approach (during consolidation)
+
+  skip_conditions: |
+    Skip a checkpoint if:
+    - User explicitly provided the parameter
+    - Research objective clearly indicates type
+    - Previous research-interviewer output specifies requirements
+
+  batch_questions: |
+    Phase 1 checkpoints can be asked together (up to 4 questions).
+    Phase 2 checkpoints are asked as conflicts arise during consolidation.
+
+# =============================================================================
+# INTEGRATION WITH SKILL.MD
+# =============================================================================
+
+skill_md_markers: |
+  In SKILL.md, checkpoints should be added:
+
+  ### Phase 1: Research Design
+
+  | Step | Action | Output |
+  |------|--------|--------|
+  | 1 | **Validate Objective** | Confirm research question is answerable |
+  | 2 | **Classify Research Type** | market | competitive | technology | strategic |
+  |   | **CHECKPOINT: research_type_classification** | |
+  |   | - If type ambiguous: AskUserQuestion | |
+  | 6 | **Assess Risks** | Quick | Standard | Comprehensive |
+  |   | **CHECKPOINT: risk_depth_selection** | |
+  |   | - If depth not specified: AskUserQuestion | |
+  | 7 | **Assign Models** | Map categories to Claude/Gemini/GPT |
+  |   | **CHECKPOINT: model_mode_selection** | |
+  |   | - If mode not specified: AskUserQuestion | |
+  | 8 | **Frame Hypotheses** | If multi_hypothesis=true |
+  |   | **CHECKPOINT: hypothesis_priors_required** | |
+  |   | - If priors missing: AskUserQuestion | |

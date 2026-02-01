@@ -1,0 +1,47 @@
+# Checkpoints for compare-options
+# References: @core/checkpoint-patterns.yaml
+# Version: 1.0
+
+skill: compare-options
+description: Checkpoints for multi-option comparison workflow.
+
+checkpoints:
+  - id: decision_domain_selection
+    type: MISSING_CRITICAL_PARAM
+    phase: 2
+    trigger:
+      condition: "decision_domain NOT specified"
+    param: decision_domain
+    valid_values:
+      - id: technical
+        label: "Technical"
+        description: "Software, infrastructure, architecture decisions"
+      - id: business
+        label: "Business"
+        description: "Strategy, operations, resource decisions"
+      - id: product
+        label: "Product"
+        description: "Feature, roadmap, user experience decisions"
+    example_questions:
+      - situation: "Compare these three options"
+        question: "What domain is this decision in?"
+
+  - id: criteria_weights_selection
+    type: MISSING_CRITICAL_PARAM
+    phase: 1
+    trigger:
+      condition: "criteria_weights NOT specified AND multiple criteria exist"
+    param: criteria_weights
+    valid_values:
+      - id: equal
+        label: "Equal weight"
+        description: "All criteria weighted equally"
+      - id: prioritized
+        label: "Prioritized"
+        description: "Specify which criteria matter most"
+      - id: user_defined
+        label: "Custom weights"
+        description: "Define exact percentages per criterion"
+    example_questions:
+      - situation: "Compare options on cost, quality, and speed"
+        question: "How should the criteria be weighted?"

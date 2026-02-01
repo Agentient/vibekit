@@ -121,7 +121,19 @@ Static analysis misses what adversarial pressure reveals. Red/Blue validation si
 
 ---
 
-## 4. Iterative Workflow
+## 4. Checkpoints
+
+This skill uses interactive checkpoints (see `references/checkpoints.yaml`) to resolve ambiguity:
+- **subject_type_classification** — When proposition type is ambiguous
+- **attack_intensity_selection** — When attack intensity not specified
+- **convergence_mode_selection** — When convergence criteria not specified
+- **premature_convergence_check** — When convergence met but warning signs present
+- **infinite_loop_risk** — When defenses generate more attacks than they resolve
+- **output_mode_selection** — When output format not specified
+
+---
+
+## 5. Iterative Workflow
 
 ### Workflow Overview
 
@@ -205,6 +217,18 @@ Static analysis misses what adversarial pressure reveals. Red/Blue validation si
 4. **Set Parameters**
    - Confirm attack intensity, convergence mode, steel-manning level
    - Estimate expected rounds based on complexity
+
+   **CHECKPOINT: subject_type_classification**
+   - If subject_type not specified or ambiguous: **AskUserQuestion**
+   - Present subject type options with attack category implications
+
+   **CHECKPOINT: attack_intensity_selection**
+   - If attack_intensity not specified: **AskUserQuestion**
+   - Present intensity options with effort implications
+
+   **CHECKPOINT: convergence_mode_selection**
+   - If convergence_mode not specified: **AskUserQuestion**
+   - Present convergence options with trade-offs
 
 **Quality Gate:** Attack Surface Mapped
 - [ ] Proposition boundaries explicitly defined
@@ -438,6 +462,14 @@ Static analysis misses what adversarial pressure reveals. Red/Blue validation si
    - If NOT CONVERGED: Increment round, return to Red Phase
    - If CONVERGED: Proceed to Post-Round Synthesis
 
+   **CHECKPOINT: premature_convergence_check**
+   - If convergence met but warning signs present: **AskUserQuestion**
+   - Warning signs: <2 rounds, CRITICAL ACCEPTs remain, key categories unexplored
+
+   **CHECKPOINT: infinite_loop_risk**
+   - If new attacks from defenses exceed previous round: **AskUserQuestion**
+   - May indicate fundamental proposition issues
+
 **Quality Gate:** Convergence Evaluated
 - [ ] Explicit continue/stop decision documented
 - [ ] Rationale provided
@@ -453,6 +485,10 @@ Static analysis misses what adversarial pressure reveals. Red/Blue validation si
 **Purpose:** Compile findings into actionable outputs.
 
 **Reference:** See `templates/` for output formats.
+
+**CHECKPOINT: output_mode_selection**
+- If output_mode not specified: **AskUserQuestion**
+- Options: risk_assessment, hardened_proposition, full_log
 
 **Steps:**
 

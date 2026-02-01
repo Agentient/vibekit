@@ -1,0 +1,273 @@
+# Checkpoints for red-blue-validator
+# References: @core/checkpoint-patterns.yaml
+# Version: 1.0
+# Last Updated: 2026-02-01
+
+skill: red-blue-validator
+description: |
+  Defines AskUserQuestion checkpoints for the red-blue-validator workflow.
+  Checkpoints ensure subject classification, attack parameters, and convergence
+  criteria align with user intent before committing to iterative adversarial cycles.
+
+# =============================================================================
+# SKILL CHECKPOINTS
+# =============================================================================
+
+checkpoints:
+
+  # ---------------------------------------------------------------------------
+  # Pre-Round Setup
+  # ---------------------------------------------------------------------------
+
+  - id: subject_type_classification
+    type: AMBIGUOUS_CLASSIFICATION
+    phase: pre_round
+    description: |
+      Triggers when proposition type is ambiguous. Subject type determines
+      which attack categories are auto-selected and how attacks are framed.
+    trigger:
+      condition: "subject_type NOT specified OR classification confidence < 0.7"
+      signals:
+        - "Proposition contains mixed language (strategic AND technical)"
+        - "Multiple valid subject types could apply"
+        - "User request is generic ('stress test this')"
+    categories:
+      - id: decision
+        label: "Decision"
+        description: "Specific choice between alternatives"
+        default_attacks: [ASSUMPTIONS, ALTERNATIVES, REVERSIBILITY, CONSEQUENCES, TIMING]
+      - id: strategy
+        label: "Strategy"
+        description: "Long-term direction or market approach"
+        default_attacks: [COMPETITIVE, MARKET, EXECUTION, DEPENDENCIES, TIMELINE]
+      - id: architecture
+        label: "Architecture"
+        description: "Technical design or system structure"
+        default_attacks: [SCALABILITY, SECURITY, DEPENDENCIES, OPERATIONAL, EDGE_CASES]
+      - id: plan
+        label: "Plan"
+        description: "Project or implementation roadmap"
+        default_attacks: [FEASIBILITY, RESOURCES, TIMELINE, DEPENDENCIES, RISKS]
+      - id: policy
+        label: "Policy"
+        description: "Organizational rule or process"
+        default_attacks: [EDGE_CASES, ENFORCEMENT, UNINTENDED_CONSEQUENCES, POLITICAL]
+      - id: investment
+        label: "Investment"
+        description: "Financial commitment or resource allocation"
+        default_attacks: [ECONOMIC, MARKET, EXECUTION, COMPETITIVE, ASSUMPTIONS]
+      - id: security
+        label: "Security"
+        description: "Security posture or threat model"
+        default_attacks: [ATTACK_SURFACE, VULNERABILITIES, DEPENDENCIES, OPERATIONAL]
+    threshold: 0.7
+    example_questions:
+      - situation: "Red team this proposal"
+        question: "What type of proposition is this?"
+        options:
+          - "Decision (choosing between alternatives)"
+          - "Strategy (long-term direction)"
+          - "Architecture (technical design)"
+          - "Plan (implementation roadmap)"
+
+  - id: attack_intensity_selection
+    type: MISSING_CRITICAL_PARAM
+    phase: pre_round
+    description: |
+      Triggers when attack intensity not specified. Intensity affects
+      number of attack categories, steel-manning depth, and convergence criteria.
+    trigger:
+      condition: "attack_intensity NOT specified AND stakes unclear"
+      signals:
+        - "User didn't indicate urgency or thoroughness"
+        - "Stakes of proposition are ambiguous"
+    param: attack_intensity
+    param_description: |
+      How aggressive should the adversarial testing be?
+      Higher intensity = more attack categories, deeper steel-manning.
+    valid_values:
+      - id: light
+        label: "Light"
+        description: "Quick validation, top 3 attack categories, max 2 rounds"
+        use_when: "Time-constrained, initial exploration, lower stakes"
+      - id: standard
+        label: "Standard (Recommended)"
+        description: "Thorough testing, top 5 attack categories, up to 3 rounds"
+        use_when: "Typical decisions, balanced depth"
+      - id: aggressive
+        label: "Aggressive"
+        description: "Exhaustive testing, all applicable categories, up to 5 rounds"
+        use_when: "High stakes, irreversible decisions, mission-critical"
+    example_questions:
+      - situation: "Stress test our market expansion strategy"
+        question: "How intense should the adversarial testing be?"
+
+  - id: convergence_mode_selection
+    type: MISSING_CRITICAL_PARAM
+    phase: pre_round
+    description: |
+      Triggers when convergence criteria not specified. Convergence mode
+      determines when to stop iterating between Red and Blue phases.
+    trigger:
+      condition: "convergence_mode NOT specified"
+    param: convergence_mode
+    param_description: |
+      When should the Red/Blue cycle stop?
+      Different modes balance thoroughness vs. efficiency.
+    valid_values:
+      - id: no_new_critical
+        label: "No new critical attacks (Recommended)"
+        description: "Stop when round produces 0 new CRITICAL or HIGH attacks"
+        use_when: "Most use cases; ensures high-severity issues addressed"
+      - id: all_addressed
+        label: "All attacks addressed"
+        description: "Stop when no ACCEPT responses remain (all REFUTE/MITIGATE/HARDEN)"
+        use_when: "High-stakes decisions requiring complete defense"
+      - id: round_limit
+        label: "Fixed round limit"
+        description: "Stop after max_rounds regardless of attack status"
+        use_when: "Time-constrained reviews, known complexity"
+    example_questions:
+      - situation: "Validate this architecture decision"
+        question: "When should we consider the validation complete?"
+
+  # ---------------------------------------------------------------------------
+  # Round N: Evaluation Phase
+  # ---------------------------------------------------------------------------
+
+  - id: premature_convergence_check
+    type: ANTI_PATTERN_DETECTED
+    phase: evaluation
+    description: |
+      Triggers when convergence criteria are met but warning signs suggest
+      premature termination. Prevents under-tested propositions.
+    trigger:
+      condition: "convergence_met AND premature_termination_signs_present"
+      signals:
+        - "Less than 2 rounds completed"
+        - "CRITICAL attacks still have ACCEPT responses"
+        - "Key attack categories unexplored"
+        - "Blue Team defenses appear superficial"
+    anti_patterns:
+      - pattern: "Converge after 1 round with CRITICAL ACCEPTs"
+        reason: "Critical vulnerabilities acknowledged but not mitigated"
+        alternative: "Continue until CRITICAL attacks have REFUTE or MITIGATE"
+      - pattern: "Converge without exploring key attack categories"
+        reason: "Major blind spots in adversarial coverage"
+        alternative: "Expand attack categories before convergence"
+    example_questions:
+      - situation: "Round 1 produced 0 new critical, but CRITICAL ACCEPT remains"
+        question: |
+          Convergence criteria met, but critical issues remain unmitigated.
+          Would you like to:
+        options:
+          - "Continue to address critical issues (Recommended)"
+          - "Converge anyway (I accept the residual risk)"
+          - "Review the critical issues before deciding"
+
+  - id: infinite_loop_risk
+    type: ANTI_PATTERN_DETECTED
+    phase: evaluation
+    description: |
+      Triggers when Blue Team responses are generating unbounded new attack
+      vectors, risking infinite iteration.
+    trigger:
+      condition: "new_attacks_from_defenses > previous_round_attacks"
+      signals:
+        - "Each defense introduces new vulnerabilities"
+        - "Attack count increasing, not decreasing"
+        - "Hardening changes create more attack surface"
+    anti_patterns:
+      - pattern: "Blue defenses create more attacks than they resolve"
+        reason: "Proposition may have fundamental issues"
+        alternative: "Step back and reconsider proposition structure"
+      - pattern: "Iterations exceed max_rounds without convergence"
+        reason: "May indicate proposition is not battle-testable"
+        alternative: "Force convergence with explicit risk documentation"
+    example_questions:
+      - situation: "Round 3 generated more attacks than Round 2"
+        question: |
+          Blue Team defenses are creating new attack vectors faster than
+          resolving them. This may indicate fundamental proposition issues.
+          Would you like to:
+        options:
+          - "Force convergence and document unresolved risks (Recommended)"
+          - "Continue for one more round"
+          - "Step back and reconsider the proposition"
+
+  # ---------------------------------------------------------------------------
+  # Post-Round Synthesis
+  # ---------------------------------------------------------------------------
+
+  - id: output_mode_selection
+    type: OUTPUT_FORMAT
+    phase: post_round
+    description: |
+      Triggers when output format not specified. Different outputs serve
+      different decision-making needs.
+    trigger:
+      condition: "output_mode NOT specified"
+    formats:
+      - id: risk_assessment
+        label: "Risk assessment only"
+        description: "CONTRACT-08 compliant risk report with go/no-go"
+        use_when: "Need structured risk documentation for governance"
+      - id: hardened_proposition
+        label: "Hardened proposition only"
+        description: "Battle-tested version with modifications and conditions"
+        use_when: "Primary goal is strengthening the proposition"
+      - id: full
+        label: "Full log (Recommended)"
+        description: "Complete attack/defense log + risk assessment + hardened proposition"
+        use_when: "Need full audit trail and all outputs"
+    default: full
+    example_questions:
+      - situation: "Post-round synthesis ready"
+        question: "What output format do you need?"
+
+# =============================================================================
+# CHECKPOINT EXECUTION LOGIC
+# =============================================================================
+
+execution:
+
+  order: |
+    Checkpoints evaluated in phase order:
+    - Pre-Round: subject_type_classification, attack_intensity_selection, convergence_mode_selection
+    - Evaluation (per round): premature_convergence_check, infinite_loop_risk
+    - Post-Round: output_mode_selection
+
+  skip_conditions: |
+    Skip a checkpoint if:
+    - User explicitly provided the parameter
+    - Previous conversation context provides clear answer
+    - Subject type is obvious from proposition content
+
+  batch_questions: |
+    Pre-Round checkpoints can be asked together (up to 3 questions).
+    Evaluation checkpoints are asked as conditions arise during iteration.
+
+# =============================================================================
+# INTEGRATION WITH SKILL.MD
+# =============================================================================
+
+skill_md_markers: |
+  In SKILL.md, checkpoints are marked inline:
+
+  ### Pre-Round Setup
+
+  1. **Proposition Intake**
+     - Receive subject
+     - Extract key claims
+
+  2. **CHECKPOINT: subject_type_classification**
+     - If subject_type not specified or ambiguous: AskUserQuestion
+     - Present subject type options with attack category implications
+
+  3. **CHECKPOINT: attack_intensity_selection**
+     - If attack_intensity not specified: AskUserQuestion
+     - Present intensity options with effort implications
+
+  4. **CHECKPOINT: convergence_mode_selection**
+     - If convergence_mode not specified: AskUserQuestion
+     - Present convergence options with trade-offs

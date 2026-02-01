@@ -1,0 +1,49 @@
+# Checkpoints for assumption-validator
+# References: @core/checkpoint-patterns.yaml
+# Version: 1.0
+
+skill: assumption-validator
+description: Checkpoints for assumption surfacing and validation workflow.
+
+checkpoints:
+  - id: subject_type_classification
+    type: AMBIGUOUS_CLASSIFICATION
+    phase: 1
+    trigger:
+      condition: "subject_type NOT specified OR classification confidence < 0.7"
+    categories:
+      - id: decision
+        label: "Decision"
+        description: "Specific choice between alternatives"
+      - id: strategy
+        label: "Strategy"
+        description: "Long-term direction or approach"
+      - id: plan
+        label: "Plan"
+        description: "Implementation roadmap"
+      - id: architecture
+        label: "Architecture"
+        description: "Technical design or system structure"
+    example_questions:
+      - situation: "Validate assumptions in this proposal"
+        question: "What type of subject are we validating?"
+
+  - id: validation_intensity_selection
+    type: MISSING_CRITICAL_PARAM
+    phase: 1
+    trigger:
+      condition: "validation_intensity NOT specified"
+    param: validation_intensity
+    valid_values:
+      - id: light
+        label: "Light"
+        description: "Surface explicit assumptions only"
+      - id: standard
+        label: "Standard (Recommended)"
+        description: "Explicit + implicit assumptions with validation"
+      - id: rigorous
+        label: "Rigorous"
+        description: "Full structural analysis with counterfactuals"
+    example_questions:
+      - situation: "Validate assumptions in our market strategy"
+        question: "How rigorous should assumption validation be?"
