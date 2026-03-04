@@ -1,485 +1,304 @@
 ---
 name: create-research-brief
-version: "2.0"
-description: Two-phase research design and consolidation skill for multi-LLM optimized research
-triggers:
-  - "create research brief"
-  - "design research strategy"
-  - "decompose research question"
-  - "multi-model research"
-  - "consolidate research findings"
-  - "research synthesis"
+description: >
+  Designs multi-model AI research strategies across 9 research patterns for
+  Claude Opus 4.6, Gemini 3.1 Pro Deep Research, and optionally GPT-5.2 Deep
+  Research (with site restrictions and mid-session intervention) or GPT-5.2
+  Chat. Generates copy-pasteable prompts optimized per model with
+  pattern-aware role assignment, a consolidation manifest for downstream
+  synthesis, and a merge prompt for consolidating outputs. Accepts Research
+  Request Specification from research-interviewer upstream. Triggers on
+  "create research brief", "research plan", "multi-model research", "research
+  prompts for Claude/Gemini/OpenAI", "design research strategy", "consolidate
+  research outputs", "synthesize research results", "research best practices
+  for...", "best practices for [technology]", "create a best practices guide
+  for...", "research [technology] patterns", "document [technology] best
+  practices", "compare X vs Y", "landscape of [domain]", "compliance
+  requirements for [topic]", "ROI analysis for [decision]". Modes: DUAL
+  (Claude+Gemini, default), FULL (3 models; GPT-5.2 Deep Research default),
+  SINGLE (Claude only). 9 patterns: landscape_mapping,
+  comparative_evaluation, implementation_pattern, best_practices,
+  competitive_intelligence, market_research, user_research,
+  economic_analysis, compliance_requirements. Outputs include consolidation
+  manifest per consolidation-manifest-schema.md.
 ---
 
 # Create Research Brief
 
-A comprehensive two-phase skill for designing multi-LLM research strategies (Phase 1) and consolidating multi-model outputs into actionable intelligence (Phase 2).
+Design multi-model research strategies for **Claude Opus 4.6**, **Gemini 3.1 Pro Deep Research**, and optionally **GPT-5.2 Deep Research** (site-restricted) or **GPT-5.2 Chat** across **9 research patterns**.
+
+## Workflow
+
+### Phase 1: Research Design
+
+1. **Detect input type** -- Direct request OR Research Request Specification (from research-interviewer)
+2. **Validate input** -- Clarify if vague (skip if Specification present)
+3. **Detect model mode** -- DUAL (default) / FULL / SINGLE
+4. **Detect OpenAI depth** -- Deep Research (default for FULL) or Chat
+5. **Classify research pattern** -- Use decision tree from [references/pattern-registry.md](references/pattern-registry.md) to select one of 9 patterns
+6. **If Best Practices** -- Load [references/best-practices-dimensions.md](references/best-practices-dimensions.md) and [references/technology-profiles.md](references/technology-profiles.md) for 8-dimension framework
+7. **Assess topic risks** -- Recency, contestation, source availability, false confidence, coverage gaps
+8. **Plan context budget** -- Estimate combined output size, select context tier
+9. **Assign model roles** -- Load Pattern x Model Configuration Matrix from [references/model-profiles.md](references/model-profiles.md); assign roles, capabilities, thinking tiers, effort levels per pattern
+10. **Configure GPT-5.2 site restrictions** -- If FULL mode, load site restriction library from [references/model-profiles.md](references/model-profiles.md) Section 6 and customize for topic
+11. **Configure Gemini file_search** -- If user has relevant documents, load file search guidance from [references/model-profiles.md](references/model-profiles.md) Section 7 and recommend uploads
+12. **Design consolidation strategy** -- Select pattern-default mode from Pattern Registry, allow user override
+13. **Generate prompts** -- Use templates from [references/model-profiles.md](references/model-profiles.md) Section 5; for Best Practices, assemble dimension-specific fragments from [references/best-practices-dimensions.md](references/best-practices-dimensions.md)
+14. **Generate consolidation manifest** -- Produce YAML manifest block per [references/consolidation-manifest-schema.md](references/consolidation-manifest-schema.md)
+15. **Produce brief** -- Use output template from [references/output-templates.md](references/output-templates.md)
+16. **Include merge prompt** -- Append merge prompt referencing the manifest from [references/output-templates.md](references/output-templates.md)
+
+### Phase 2: Consolidation (after user executes prompts)
+
+17. **Receive outputs** -- User pastes/attaches research results
+18. **Consolidate** -- Follow workflow in [references/consolidation.md](references/consolidation.md)
 
 ---
 
-## 1. Purpose
+## Model Overview
 
-This skill provides 9 core capabilities:
+| Model | Role | Key Capabilities |
+|-------|------|------------------|
+| **Claude Opus 4.6** | Primary Researcher | 84% BrowseComp, 68.8% ARC-AGI-2, 1M context, 128K output, self-correction, cross-domain synthesis |
+| **Gemini 3.1 Pro Deep** | Structured Cataloger | 85.9% BrowseComp, 77.1% ARC-AGI-2, 1M context, 64K output, file_search (uploaded docs as sources), autonomous 5-30 min agent |
+| **GPT-5.2 Deep Research** | Targeted Investigator | Site-restricted search (unique), leading MRCR v2 at 128-256K, 5-30 min autonomous agent, mid-session intervention |
+| **GPT-5.2 Chat** | Recency Validator | Quick recent developments, community signals |
 
-| # | Capability | Phase | Description |
-|---|------------|-------|-------------|
-| 1 | **Decompose** | 1 | Break research questions into MECE structures |
-| 2 | **Assign** | 1 | Map question categories to optimal LLMs |
-| 3 | **Assess** | 1 | Evaluate research risks at appropriate depth |
-| 4 | **Generate** | 1 | Produce model-specific optimized prompts |
-| 5 | **Consolidate** | 2 | Synthesize multi-model outputs into unified findings |
-| 6 | **Resolve** | 2 | Handle conflicting information with WWHTBT protocol |
-| 7 | **Classify** | 2 | Score evidence quality and tag uncertainty types |
-| 8 | **Detect** | 2 | Identify coverage gaps and unknown unknowns |
-| 9 | **Produce** | 2 | Generate tiered, decision-ready research reports |
+**Capability uniqueness**: Claude = self-correction + cross-domain synthesis. Gemini = file_search. GPT-5.2 Deep = site-restricted search. Web research is a shared capability (Claude 84%, Gemini 85.9%); differentiate by approach, not access.
+
+For detailed profiles, prompt templates, role assignment, and per-pattern configuration: [references/model-profiles.md](references/model-profiles.md)
 
 ---
 
-## Checkpoints
+## Mode Detection
 
-This skill uses interactive checkpoints (see `references/checkpoints.yaml`) to resolve ambiguity:
-- **research_type_classification** — When research type is ambiguous
-- **risk_depth_selection** — When risk assessment depth not specified
-- **model_mode_selection** — When model execution mode not specified
-- **hypothesis_priors_required** — When multi_hypothesis enabled but priors missing
-- **conflict_resolution_approach** — When model outputs have significant conflicts (Phase 2)
+### Model Mode
 
----
+| User Signal | Mode |
+|-------------|------|
+| No model specification | **DUAL** (default) |
+| "all three models" / "full research" / "include OpenAI" / "comprehensive" | **FULL** |
+| "without OpenAI" / "skip OpenAI" / "Claude and Gemini only" | **DUAL** (confirm) |
+| "dual model" / "two model" | **DUAL** |
+| "Claude only" / "quick research" / "fast analysis" | **SINGLE** |
 
-## 2. Two-Phase Workflow
+### OpenAI Depth (FULL mode only)
 
-### Phase 1: Research Design (Before Research)
+GPT-5.2 **Deep Research is the default** for FULL mode. Site-restricted search is its unique differentiator -- use Chat only when explicitly downgraded.
 
-| Step | Action | Output |
-|------|--------|--------|
-| 1 | **Validate Objective** | Confirm research question is answerable |
-| 2 | **Classify Research Type** | market \| competitive \| technology \| strategic |
-|   | **CHECKPOINT: research_type_classification** | If type ambiguous: AskUserQuestion |
-| 3 | **Define Scope** | In-scope, out-of-scope, boundaries |
-| 4 | **Select MECE Pattern** | 5-category decomposition structure |
-| 5 | **Generate Sub-Questions** | 3-4 questions per category |
-| 6 | **Assess Risks** | Quick \| Standard \| Comprehensive |
-|   | **CHECKPOINT: risk_depth_selection** | If depth not specified: AskUserQuestion |
-| 7 | **Assign Models** | Map categories to Claude/Gemini/GPT |
-|   | **CHECKPOINT: model_mode_selection** | If mode not specified: AskUserQuestion |
-| 8 | **Frame Hypotheses** | If `multi_hypothesis=true` |
-|   | **CHECKPOINT: hypothesis_priors_required** | If priors missing: AskUserQuestion |
-| 9 | **Recommend Expert Panel** | If `expert_panel=true` |
-| 10 | **Produce Research Brief** | XML-structured Phase 1 deliverable |
-
-### Phase 2: Consolidation (After Research)
-
-| Step | Action | Output |
-|------|--------|--------|
-| 1 | **Ingest Model Outputs** | Parse all LLM research results |
-| 2 | **Score Evidence** | Apply 5-point Evidence Strength Rubric |
-| 3 | **Detect Conflicts** | Identify where models disagree |
-| 4 | **Resolve Conflicts** | Apply WWHTBT for unresolved |
-| 5 | **Classify Uncertainty** | Tag as epistemic/aleatory/model |
-| 6 | **Audit MECE Coverage** | Check for coverage gaps |
-| 7 | **Probe Unknown Unknowns** | Run 5 discovery probes |
-| 8 | **Tier Findings** | Assign to Tier 1/2/3 by confidence |
-| 9 | **Build Decision Support** | Create if-then decision tree |
-| 10 | **Define Kill Criteria** | Conditions that invalidate research |
-| 11 | **Produce Report** | XML-structured Phase 2 deliverable |
+| User Signal | Depth |
+|-------------|-------|
+| No specification | **Deep Research** (default) |
+| "quick OpenAI" / "lite" / "lightweight" / "skip deep research" | **Chat** |
+| "OpenAI deep research" / "comprehensive OpenAI" / "site-restricted" | **Deep Research** (confirm) |
 
 ---
 
-## 3. Parameters
+## Research Pattern Classification
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `research_objective` | string | *required* | The core research question or goal |
-| `research_type` | enum | `market` | market \| competitive \| technology \| strategic |
-| `model_mode` | enum | `parallel` | parallel \| sequential \| convergent |
-| `openai_depth` | enum | `balanced` | minimal \| balanced \| exhaustive |
-| `risk_depth` | enum | `standard` | quick \| standard \| comprehensive |
-| `multi_hypothesis` | bool | `false` | Enable hypothesis-driven framing |
-| `expert_panel` | bool | `false` | Include expert panel recommendations |
-| `context` | string | `""` | Additional context for research |
+Use the decision tree in [references/pattern-registry.md](references/pattern-registry.md) to classify. Summary table:
 
----
+| Pattern | Trigger Signals | Primary Deliverable | Default Consolidation |
+|---------|----------------|--------------------|-----------------------|
+| **Landscape Mapping** | "map the landscape", "who's out there", "ecosystem overview" | Taxonomy + player inventory + white space map | breadth_first |
+| **Comparative Evaluation** | "compare X vs Y", "which should I choose", "trade-offs" | Weighted decision matrix + sensitivity analysis | confidence_weighted |
+| **Implementation Pattern** | "how do I implement", "architecture patterns", "reference architecture" | Architecture decision catalog + pattern catalog + anti-pattern register | depth_first |
+| **Best Practices** | "best practices for", "idiomatic patterns", "gotchas", "anti-patterns" | 8-dimension technology knowledge base | gap_driven |
+| **Competitive Intelligence** | "competitive moat", "positioning analysis", "competitive dynamics" | Per-competitor strategic profile + dynamics analysis | adversarial |
+| **Market Research** | "market size", "TAM", "segments", "entry strategy" | TAM/SAM/SOM + segmentation framework + dynamics | standard |
+| **User Research** | "user needs", "JTBD", "persona", "pain points" | Persona profiles + JTBD map + ranked unmet needs | depth_first |
+| **Economic Analysis** | "ROI", "TCO", "cost-benefit", "business case" | Financial model + sensitivity analysis + benchmarks | confidence_weighted |
+| **Compliance & Requirements** | "compliance", "regulatory", "GDPR", "audit requirements" | Requirements register + constraint map + governance | gap_driven |
 
-## 4. Model Strengths & Assignment
+### Best Practices Pattern
 
-### Model Profiles
+When pattern = **Best Practices**, activate the 8-dimension framework:
 
-| Model | Primary Strength | Best For | Limitation |
-|-------|------------------|----------|------------|
-| **Claude Opus 4.5** | Judgment, synthesis, nuance | Strategic questions, conflict resolution, synthesis | May not surface all sources |
-| **Gemini Pro 3** | Breadth, citations, grounding | Factual lookup, comprehensive sourcing, current data | Less depth on complex reasoning |
-| **GPT-5.2 Deep** | Recency, depth, exhaustiveness | Technical details, narrow deep-dives, edge cases | Can miss broader context |
+1. **Environmental Context** -- Runtime, config, auth, secrets, project structure
+2. **Idiomatic Patterns** -- How practitioners write it vs. how it merely works
+3. **Anti-Patterns & Guardrails** -- What fails at scale, root cause reasoning
+4. **Testing & Validation** -- Emulators, mocks, integration tests, gaps
+5. **Dependencies & Versions** -- Compatibility matrices, packages to avoid
+6. **Operational Awareness** -- Cost drivers, scaling, cold starts, monitoring
+7. **Decision Trees** -- When to use which approach, architectural boundaries
+8. **Escape Hatches** -- Known bugs, workarounds with expiration, when to eject
 
-### Default Category Assignments
-
-| Research Type | Claude | Gemini | GPT |
-|---------------|--------|--------|-----|
-| **Market** | Demand, Trends | Size, Structure, Supply | — |
-| **Competitive** | Positioning, Strategy | Product, GTM, Org | Deep Dive |
-| **Technology** | Fit, Risk | Maturity, Cost | Capability |
-| **Strategic** | Options, Stakeholders | Environment | Implementation |
+Weight dimensions by technology family from [references/technology-profiles.md](references/technology-profiles.md). Assemble prompts using dimension fragments from [references/best-practices-dimensions.md](references/best-practices-dimensions.md).
 
 ---
 
-## 5. Risk Assessment Depths
+## Input Detection
 
-### Quick (5 Factors)
-Basic risk identification for time-sensitive research:
-- Top 3 risks with likelihood/impact
-- No mitigations or scenarios
+### Research Request Specification (from research-interviewer)
 
-### Standard (+ Bias Audit)
-Adds mitigation planning and cognitive bias check:
-- Mitigations and contingencies per risk
-- Early warning signals
-- Bias audit: confirmation, availability, anchoring
+Detect by: YAML block with `research_request:` root containing `objective:`, `questions:`, `scope:`, `constraints:`.
 
-### Comprehensive (+ Base Rates)
-Full risk analysis with historical grounding:
-- Risk scenarios with trigger conditions
-- Risk dependencies and cascades
-- Base rate comparison from similar research
-- Pre-mortem analysis
+**When detected**: Skip validation. Extract `objective`, `questions.primary/secondary`, `scope.in_scope/out_of_scope`, `constraints.model_mode`, `constraints.depth_vs_breadth`, `context.prior_knowledge`, `metadata.suggested_research_type` (verify, don't blindly accept).
 
----
+### Direct Request Validation
 
-## 6. MECE Decomposition Patterns
+**Required**: Research objective specific enough to derive key questions.
 
-### Pattern 1: Market Research
-| Category | Focus | Model |
-|----------|-------|-------|
-| Market Size & Dynamics | TAM/SAM/SOM, growth rates | Gemini |
-| Market Structure | Segmentation, value chain | Gemini |
-| Demand Characteristics | Buyers, use cases, criteria | Claude |
-| Supply & Competition | Players, barriers, substitutes | Gemini |
-| Market Evolution | Trends, regulatory, disruption | Claude |
+**Optional (with defaults)**: Research pattern (infer), context (none), timeline (standard), output use (general decision support), model mode (DUAL), OpenAI depth (Deep Research).
 
-### Pattern 2: Competitive Intelligence
-| Category | Focus | Model |
-|----------|-------|-------|
-| Product & Offering | Features, pricing, roadmap | GPT |
-| Customers & Positioning | Segments, win/loss, messaging | Claude |
-| Go-to-Market | Sales, marketing, partnerships | Gemini |
-| Organization & Operations | Team, tech stack, cost structure | Gemini |
-| Strategy & Trajectory | Direction, investments, SWOT | Claude |
+When insufficient and no Specification present:
 
-### Pattern 3: Technology Evaluation
-| Category | Focus | Model |
-|----------|-------|-------|
-| Capability & Performance | Features, benchmarks, limits | GPT |
-| Maturity & Ecosystem | Stability, community, tools | Gemini |
-| Fit & Integration | Use case alignment, migration | Claude |
-| Cost & Investment | TCO, licensing, infrastructure | Gemini |
-| Risk & Governance | Technical, vendor, compliance | Claude |
-
-### Pattern 4: Strategic Research
-| Category | Focus | Model |
-|----------|-------|-------|
-| Current State | Position, strengths, weaknesses | Claude |
-| External Environment | Industry, macro, technology | Gemini |
-| Strategic Options | Directions, trade-offs, requirements | Claude |
-| Stakeholder Considerations | Customer, competitor, employee | Claude |
-| Implementation Requirements | Capabilities, investments, timeline | GPT |
+> To design an effective research strategy, I need:
+> 1. **Research objective**: What specific question(s) do you want answered?
+> 2. **Research pattern** (optional): Landscape / Comparative / Implementation / Best Practices / Competitive / Market / User / Economic / Compliance?
+> 3. **Context** (optional): Background, constraints, or intended use?
+>
+> **Alternatively**: Say "interview me about [topic]" to clarify your needs first.
 
 ---
 
-## 7. Multi-Hypothesis Framing
+## Risk Assessment
 
-### When to Enable
-- Testing predictions or forecasts
-- Evaluating competing theories
-- Decision involves binary or multi-way choice
-- Need to avoid confirmation bias
+Rate each factor High / Medium / Low:
 
-### Process
-1. Define core question as testable prediction
-2. Generate 2-4 MECE hypotheses covering all outcomes
-3. Assign prior probabilities (must sum to 100%)
-4. Define supporting and refuting evidence for each
-5. Research gathers evidence against criteria
-6. Update posteriors based on evidence strength
+| Risk Factor | Assessment Criteria | Design Impact |
+|-------------|---------------------|---------------|
+| **Recency sensitivity** | How quickly does info change? | DUAL has reduced concern (Claude 84% + Gemini 85.9% BrowseComp). Flag only for live events, fast-moving regulation, or topics needing site-restricted precision (GPT-5.2). |
+| **Contestation level** | Genuine disagreement? | May need adversarial consolidation |
+| **Source availability** | Well-documented or sparse? | Affects coverage expectations |
+| **False confidence risk** | Shared in LLM training? | Requires cross-validation |
+| **Coverage gap risk** | Emerging/niche topic? | May need multiple search passes |
 
-### Example
-```xml
-<hypotheses question="Will enterprise adopt GenAI for customer service by 2027?">
-  <hypothesis id="H1" position="broad" prior="30%">
-    >50% enterprise adoption
-  </hypothesis>
-  <hypothesis id="H2" position="selective" prior="50%">
-    10-50% adoption in specific use cases
-  </hypothesis>
-  <hypothesis id="H3" position="limited" prior="20%">
-    <10% adoption due to barriers
-  </hypothesis>
-</hypotheses>
+---
+
+## Context Budget Planning
+
+### Output Estimates by Model
+
+| Model | Standard Output | Complex Output | Maximum |
+|-------|----------------|----------------|---------|
+| Claude Opus 4.6 | 15-40K tokens | 40-80K tokens | 128K tokens |
+| Gemini 3.1 Pro | 30-60K tokens | 60-80K tokens | 64K tokens |
+| GPT-5.2 Deep Research | 30-60K tokens | 60-80K tokens | ~80K tokens |
+| GPT-5.2 Chat | 2-5K tokens | 5-10K tokens | ~15K tokens |
+
+### Combined Budget by Mode
+
+| Mode | Expected Combined | Tier | Strategy |
+|------|-------------------|------|----------|
+| SINGLE | 15-80K tokens | Standard | Single output, no consolidation needed |
+| DUAL | 50-160K tokens | Standard | Both outputs unabridged, single consolidation pass |
+| FULL | 100-240K tokens | Standard or Extended | All outputs unabridged |
+| FULL (complex) | 150-300K+ tokens | Extended (beta) | Use 1M context, all unabridged |
+
+**Principle**: Always prefer full unabridged outputs. Opus 4.6's 76% MRCR v2 long-context retrieval can attend throughout the window.
+
+---
+
+## Consolidation Modes
+
+| Mode | When to Use |
+|------|-------------|
+| **Standard** | Moderate stakes, stable topics, quantitative findings reconcilable across sources |
+| **Adversarial** | High stakes, contested topics, outputs seem too aligned, confirmation bias risk |
+| **Gap-Driven** | Comprehensive requirements, explicit coverage checklists (e.g., 8-dimension BP framework) |
+| **Confidence-Weighted** | Executive-facing, evidence quality paramount, selection decisions |
+| **Depth-First** | Strategic decisions, insight > coverage, behavioral reasoning |
+| **Breadth-First** | Landscape mapping, unfamiliar domains, completeness > depth |
+| **Agentic** | All models completed, topic well-bounded, minimal human intervention needed |
+
+### Pattern-Default Mapping
+
+| Pattern | Default Mode | Override Trigger |
+|---------|-------------|-----------------|
+| `landscape_mapping` | breadth_first | User says "deep-dive on key players" -- depth_first |
+| `comparative_evaluation` | confidence_weighted | User says "quick comparison" -- standard |
+| `implementation_pattern` | depth_first | User says "comprehensive pattern catalog" -- breadth_first |
+| `best_practices` | gap_driven | User says "focus on anti-patterns only" -- depth_first |
+| `competitive_intelligence` | adversarial | User says "just the facts" -- standard |
+| `market_research` | standard | User says "high-stakes investment decision" -- confidence_weighted |
+| `user_research` | depth_first | User says "broad needs survey" -- breadth_first |
+| `economic_analysis` | confidence_weighted | User says "rough estimate is fine" -- standard |
+| `compliance_requirements` | gap_driven | User says "focus on highest-risk areas" -- depth_first |
+
+For mode details and full consolidation workflow: [references/consolidation.md](references/consolidation.md)
+
+---
+
+## Effort & Thinking Directives
+
+| Model | Directive | Values | Research Default | Consolidation Default |
+|-------|-----------|--------|------------------|-----------------------|
+| **Claude Opus 4.6** | effort | low / medium / high / max | max | max |
+| **Gemini 3.1 Pro** | thinking | Low / Medium / High | High | -- |
+| **GPT-5.2 Deep Research** | thinking_effort | low / medium / high / extended | extended | -- |
+| **GPT-5.2 Chat** | mode | Instant / Thinking | Instant | -- |
+
+Include in Claude Opus 4.6 prompts:
+```yaml
+# Claude API Configuration
+model: "claude-opus-4-6"
+thinking:
+  type: "adaptive"
+effort: "max"
+max_tokens: 16000  # Up to 128000 for comprehensive output
 ```
 
----
-
-## 8. Evidence Strength Tribunal
-
-5-point scale for evaluating source quality:
-
-| Score | Name | Definition | Examples |
-|-------|------|------------|----------|
-| **5** | Primary | Direct from entity being researched | SEC filings, earnings calls, official docs |
-| **4** | Auth. Secondary | Major analysts with citations | Gartner, Forrester, WSJ investigative |
-| **3** | Credible Secondary | Reputable sources, some sourcing | TechCrunch, industry publications |
-| **2** | Weak Secondary | Unsourced, outdated, anonymous | LinkedIn self-reports, old reports |
-| **1** | Speculative | No verifiable basis | Rumors, predictions, fabrications |
-
-**Time Decay:** Apply -1 for technology data >6 months, market data >1 year.
-
-**Reference:** See `references/evidence-strength-rubric.md` for full scoring guidelines.
+If over-thinking detected: add "Use deep reasoning for strategic analysis; move efficiently through factual compilation."
 
 ---
 
-## 9. Conflict Resolution: WWHTBT
+## Consolidation Manifest
 
-When models or sources disagree and resolution isn't clear, apply **What Would Have To Be True** analysis:
+Every research brief must include a consolidation manifest YAML block generated per [references/consolidation-manifest-schema.md](references/consolidation-manifest-schema.md). The manifest travels from design through execution to consolidation.
 
-```xml
-<conflict claim="Market size for X">
-  <position holder="Gartner" value="$50B">
-    <evidence score="4">2024 market report with methodology</evidence>
-  </position>
-  <position holder="IDC" value="$35B">
-    <evidence score="4">Different scope definition</evidence>
-  </position>
+Required fields: `research_id`, `pattern`, `topic`, `objective`, `model_mode`, `created_at`, `models[]` (per model: model_id, role, capabilities), `pattern_metadata`, `coverage_matrix`, `consolidation` (recommended_mode, pattern_default_mode, verification_priorities), `research_chain`, `freshness` (topic_volatility, confidence_half_life, staleness_indicators, recommended_refresh).
 
-  <wwhtbt>
-    <for_gartner>
-      <condition>Adjacent markets included in scope</condition>
-      <condition>Projected vs. realized revenue counted</condition>
-    </for_gartner>
-    <for_idc>
-      <condition>Only core product category</condition>
-      <condition>Realized revenue only</condition>
-    </for_idc>
-  </wwhtbt>
-
-  <recommendation>
-    Report range ($35-50B) with scope dependency noted.
-    For our purposes, IDC definition more aligned.
-  </recommendation>
-</conflict>
-```
+If this research follows prior research, populate `research_chain.upstream_id` with the previous manifest's `research_id`, `research_chain.upstream_pattern`, and `research_chain.inherited_constraints`.
 
 ---
 
-## 10. Uncertainty Decomposition
+## Quality Gates
 
-| Type | Definition | Can Reduce? | Action |
-|------|------------|-------------|--------|
-| **Epistemic** | Knowledge gaps that COULD be closed | YES | Research further |
-| **Aleatory** | Inherent randomness that CANNOT be predicted | NO | Quantify range, build scenarios |
-| **Model** | Framework/definition dependencies | DEPENDS | Make choices explicit |
+### Before completing research brief:
+- [ ] Input type detected (direct OR Specification)
+- [ ] If Specification: fields extracted, interview_confidence noted
+- [ ] If direct: objective is specific and actionable
+- [ ] Model mode correctly detected (default: DUAL)
+- [ ] Research pattern correctly classified (9 patterns, using decision tree)
+- [ ] If Best Practices: 8 dimensions assessed, technology family identified, dimension weights applied
+- [ ] Risk assessment completed (5 factors)
+- [ ] Context budget estimated, tier selected
+- [ ] Model roles assigned per Pattern x Model Configuration Matrix
+- [ ] Claude prompt includes: effort directive, web search activation, cross-domain synthesis, self-review mandate
+- [ ] Gemini prompt includes: thinking tier, structured data directives, citation requirements, table/matrix requests
+- [ ] If FULL: GPT-5.2 site restrictions generated and customized for topic
+- [ ] Gemini file_search recommendations included (if applicable)
+- [ ] Consolidation mode matches pattern default (or documented override)
+- [ ] Consolidation manifest generated with all required fields
+- [ ] If sequential research: manifest includes research chain predecessors
+- [ ] Freshness model populated (topic_volatility, confidence_half_life, staleness_indicators, recommended_refresh)
+- [ ] Coverage matrix covers all key questions
+- [ ] If from research-interviewer: prior_knowledge included in prompt context
+- [ ] Merge prompt included at end of brief
 
-### Classification Questions
-- **Epistemic:** "Does someone, somewhere know this?"
-- **Aleatory:** "Even with perfect info, would this still be uncertain?"
-- **Model:** "Would a different definition change the answer?"
-
-**Reference:** See `references/uncertainty-taxonomy.md` for full classification protocol.
-
----
-
-## 11. Gap Analysis
-
-### Part 1: MECE Coverage Audit
-Compare findings against expected coverage matrix for research type. Flag:
-- **Critical gaps:** Core dimensions missing or Score ≤2
-- **Significant gaps:** Supporting dimensions weak
-- **Minor gaps:** Context items missing
-
-### Part 2: Unknown Unknowns Probes
-
-| Probe | Question |
-|-------|----------|
-| **Adjacent Domain** | What lessons from related industries apply? |
-| **Stakeholder Blind Spot** | Whose voice is missing from sources? |
-| **Time Horizon** | What historical precedents or future implications are ignored? |
-| **Failure Mode** | What would have to be true for conclusions to be wrong? |
-| **Second-Order Effects** | If findings are true, what else must follow? |
-
-**Reference:** See `references/gap-analysis-protocol.md` for full audit process.
-
----
-
-## 12. Output Specifications
-
-### Phase 1 Deliverable: Research Brief
-
-```
-research-brief.xml
-├── Header (ID, type, mode, parameters)
-├── Section 1: Research Classification
-├── Section 2: MECE Question Decomposition
-├── Section 3: Multi-Hypothesis Framing (if enabled)
-├── Section 4: Risk Assessment
-├── Section 5: Expert Panel (if enabled)
-├── Section 6: Model Role Assignments
-├── Section 7: Ready-to-Execute Prompts
-├── Section 8: Consolidation Strategy
-├── Section 9: Verification Priorities
-└── Section 10: Effort Estimates
-```
-
-### Phase 2 Deliverable: Consolidated Report
-
-```
-consolidated-report.xml
-├── Header (quality summary)
-├── Part 1: Executive Summary (≤5 findings, bottom line)
-├── Part 2: Tiered Findings (1: >75%, 2: 50-75%, 3: <50%)
-├── Part 3: Evidence Quality Assessment
-├── Part 4: Contested Claims & Conflict Resolution
-├── Part 5: Uncertainty Analysis
-├── Part 6: Gap Analysis
-├── Part 7: Model Contribution Analysis
-├── Part 8: Decision Support (if-then tree)
-├── Part 9: Kill Criteria
-├── Part 10: Methodology Transparency
-├── Part 11: Appendices
-└── CRITICAL CONSTRAINTS (at end for context retention)
-```
-
-**Templates:** See `templates/research-brief-template.md` and `templates/consolidated-report-template.md`
+### Before completing consolidation:
+- [ ] All outputs processed (full, unabridged if within budget)
+- [ ] Claims triaged by type with provenance tags
+- [ ] Disagreements resolved per protocol
+- [ ] False confidence audit applied to unanimous high-risk claims
+- [ ] Confidence tiers assigned (Tier 1 >75%, Tier 2 50-75%, Tier 3 <50%)
+- [ ] Self-review pass completed
+- [ ] Cross-domain synthesis section populated
+- [ ] Gaps documented with recommended actions
+- [ ] Effort level set to "max"
+- [ ] Context tier documented in methodology
 
 ---
 
-## 13. Expert Panel Integration
+## References
 
-### When to Enable
-- High-stakes decisions
-- Multi-disciplinary topics
-- Need for challenge/red-teaming
-- Regulatory or compliance implications
-
-### Process
-1. Identify panel size (3-8 experts) and balance
-2. Select domain-appropriate experts
-3. Define deliberation format (round-robin, debate, Delphi)
-4. Assign challenger role for assumption testing
-5. Synthesize panel perspectives into findings
-
-### Expert Selection by Domain
-
-| Domain | Recommended Experts |
-|--------|---------------------|
-| **Market** | Market analyst, Customer representative, Industry veteran |
-| **Competitive** | Competitive intel analyst, Former competitor employee, Sales leader |
-| **Technology** | Technical architect, Security specialist, Operations lead |
-| **Strategic** | Strategy consultant, Board member, Industry analyst |
-
----
-
-## 14. Quality Gates
-
-### Phase 1 Gates (Research Design)
-
-| # | Gate | Criterion |
-|---|------|-----------|
-| 1 | Objective Clarity | Single, answerable research question |
-| 2 | MECE Validity | Categories non-overlapping and exhaustive |
-| 3 | Question Quality | All sub-questions researchable |
-| 4 | Model Fit | Assignments match model strengths |
-| 5 | Prompt Executability | Prompts can run without modification |
-| 6 | Completeness | All required sections populated |
-
-### Phase 2 Gates (Consolidation)
-
-| # | Gate | Criterion |
-|---|------|-----------|
-| 1 | Evidence Scored | All findings have evidence scores |
-| 2 | Conflicts Surfaced | No hidden disagreements |
-| 3 | Uncertainty Classified | All gaps tagged by type |
-| 4 | Coverage Audited | MECE matrix reviewed |
-| 5 | Probes Executed | ≥3 of 5 unknown-unknowns probes run |
-| 6 | Tiers Justified | Confidence matches evidence profile |
-| 7 | Decision Support | Actionable if-then structure |
-| 8 | Constraints Verified | All 7 critical constraints checked |
-
----
-
-## 15. Use Cases
-
-| Use Case | Type | Mode | Risk | Hypothesis | Panel |
-|----------|------|------|------|------------|-------|
-| **Market sizing** | market | parallel | quick | no | no |
-| **Competitor deep-dive** | competitive | sequential | standard | no | no |
-| **Build vs buy** | technology | convergent | comprehensive | yes | yes |
-| **Strategic planning** | strategic | parallel | comprehensive | yes | yes |
-| **Trend monitoring** | market | parallel | quick | no | no |
-| **Investment due diligence** | competitive | convergent | comprehensive | yes | yes |
-
----
-
-## 16. Workflow Integration
-
-This skill integrates with the broader research workflow:
-
-```
-┌─────────────────────┐
-│ research-interviewer│  Elicit research requirements
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│create-research-brief│  ◀── THIS SKILL (Phase 1)
-│     (Phase 1)       │  Design multi-LLM research strategy
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│   Execute Research  │  Run prompts across models
-│  (Manual or Agent)  │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│create-research-brief│  ◀── THIS SKILL (Phase 2)
-│     (Phase 2)       │  Consolidate into report
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ consolidate-research│  Additional synthesis if needed
-└─────────────────────┘
-```
-
----
-
-## 17. References and Templates
-
-### Reference Files
-| File | Purpose |
-|------|---------|
-| `references/evidence-strength-rubric.md` | 5-point evidence scoring with special cases |
-| `references/uncertainty-taxonomy.md` | 3 uncertainty types with classification protocol |
-| `references/gap-analysis-protocol.md` | MECE audit + 5 unknown-unknowns probes |
-| `references/mece-decomposition-guide.md` | Full decomposition patterns with examples |
-
-### Template Files
-| File | Purpose |
-|------|---------|
-| `templates/research-brief-template.md` | Phase 1 output structure (XML) |
-| `templates/consolidated-report-template.md` | Phase 2 output structure (XML) |
-
----
-
-## Quick Start
-
-### Phase 1: Create Research Brief
-```
-/create-research-brief
-research_objective: "What is the market opportunity for AI legal research tools?"
-research_type: market
-risk_depth: standard
-```
-
-### Phase 2: Consolidate Research
-```
-/create-research-brief --phase=2
-input: [model outputs from Phase 1 execution]
-```
+| File | Load When | Contents |
+|------|-----------|----------|
+| [references/model-profiles.md](references/model-profiles.md) | Generating prompts, assigning roles, configuring site restrictions, file_search guidance | Model capabilities, role assignments, Pattern x Model Configuration Matrix, prompt templates, site restriction library, file search guidance, effort/thinking directives |
+| [references/pattern-registry.md](references/pattern-registry.md) | Classifying pattern, designing consolidation strategy, resolving compound intent | 9 pattern definitions, decision tree, trigger signals, deliverables, sequencing, pattern-default consolidation mapping, interrelationship matrix |
+| [references/consolidation-manifest-schema.md](references/consolidation-manifest-schema.md) | Generating the consolidation manifest | Full YAML schema with required/optional fields, validation rules, examples |
+| [references/output-templates.md](references/output-templates.md) | Producing the research brief | DUAL/FULL/SINGLE mode templates, pattern-specific output templates, merge prompt |
+| [references/consolidation.md](references/consolidation.md) | Phase 2: consolidating research outputs | Consolidation workflow, disagreement protocol, self-review, output template, consolidation prompt |
+| [references/best-practices-dimensions.md](references/best-practices-dimensions.md) | Pattern = Best Practices | 8-dimension framework, per-dimension Claude & Gemini prompt fragments, assembly instructions |
+| [references/technology-profiles.md](references/technology-profiles.md) | Pattern = Best Practices | Pre-built scope templates and dimension weighting for technology families |
