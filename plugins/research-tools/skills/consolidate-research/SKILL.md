@@ -1,6 +1,7 @@
 ---
 name: consolidate-research
 description: Consolidate and synthesize research outputs from multiple AI models or sources into a unified, pattern-aware, provenance-enriched report with quality metrics. Use when the user has research outputs to consolidate, wants to synthesize multiple reports, asks to "consolidate", "synthesize", or "merge" research findings, or needs to reconcile conflicting information from different sources. Works with outputs from Claude, Gemini, GPT-5.2, or any combination of AI/human sources. Supports manifest-driven (from create-research-brief) and standalone operation.
+context: fork
 ---
 
 # Consolidate Research
