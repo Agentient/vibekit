@@ -132,25 +132,25 @@ Execute the following prompts in each model:
 
 ### Phase 4: Consolidation
 
-Run `create-research-brief` Phase 2 to synthesize:
+Run `consolidate-research` to synthesize:
 
-**Objective:** Produce unified findings with:
-- Evidence scoring (5-point scale)
-- Conflict resolution (WWHTBT protocol)
-- Uncertainty classification
-- MECE coverage audit
+**Objective:** Produce a unified, confidence-tiered report with:
+- Provenance-weighted reconciliation (citation quality + source independence)
+- Confidence tiering (Tier 1/2/3); same-primary-source agreement caps at Tier 2
+- Cross-domain synthesis pass
+- Coverage-gap audit against the consolidation manifest
 
 **Output:** `<consolidated-report>` with:
 - Executive summary
-- Findings by category with evidence scores
-- Conflicts resolved and rationale
-- Remaining gaps and recommendations
+- Tier 1 / Tier 2 findings with support and caveats
+- Contested areas with resolution paths
+- Coverage gaps, quality metrics, and freshness model
 
 **Quality Gate:**
 - [ ] All model outputs incorporated
-- [ ] Evidence scores assigned
-- [ ] Conflicts explicitly resolved
-- [ ] Actionable recommendations provided
+- [ ] Confidence tiers assigned (same-primary-source capped at Tier 2)
+- [ ] Conflicts explicitly resolved via the disagreement protocol
+- [ ] Actionable downstream recommendations provided
 
 ## Output Format
 
