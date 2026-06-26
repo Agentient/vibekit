@@ -232,6 +232,32 @@ Tag all outputs `claim_type: cross_domain_synthesis`. Document pass execution ev
 
 ## Step 6: Generate Output
 
+### Output Envelope (artifact wrapper)
+
+Wrap the rendered report in a `<consolidated-report>` artifact envelope so downstream skills, `run-research-pipeline` (its Phase 4 output slot), and the plugin's Stop hook recognize the artifact — consistent with the sibling `problem_statement` (CONTRACT-01) and `<research-brief>` conventions. Keep the report body as Markdown inside `<report>`; do NOT XML-encode the section tables or YAML blocks.
+
+```xml
+<consolidated-report version="1.0">
+  <metadata>
+    <artifact_id>CR-{YYYY-MM-DD}-{5-char-hash}</artifact_id>
+    <contract_type>CONSOLIDATED-REPORT</contract_type>
+    <created_at>{ISO 8601 timestamp}</created_at>
+    <created_by>consolidate-research</created_by>
+    <confidence>{overall report confidence, 0.0-1.0}</confidence>
+    <provenance>
+      <research_id>{manifest research_id, or generated}</research_id>
+      <pattern>{pattern_id}</pattern>
+      <mode>{consolidation mode}</mode>
+      <sources>{comma-separated source model_ids}</sources>
+      <upstream_id>{research_chain.upstream_id, or none}</upstream_id>
+    </provenance>
+  </metadata>
+  <report>
+  {the Universal + Pattern-Specific sections below, rendered as Markdown}
+  </report>
+</consolidated-report>
+```
+
 ### Template Selection
 
 Manifest present with pattern → use directly. No manifest → infer from content via Pattern Registry decision tree; confirm with user.
